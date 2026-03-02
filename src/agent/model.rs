@@ -185,7 +185,36 @@ pub enum AgentStatus {
     Idle,
     /// Agent encountered an error (✗ red)
     Error(String),
+    /// Agent is stopped/not started (○ gray)
     Stopped,
+    /// Agent is paused for checkout (⏸ blue)
+    Paused,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum PauseCheckoutMode {
+    GitCheckout,
+    GitCheckoutDetached,
+}
+
+impl PauseCheckoutMode {
+    pub fn label(&self) -> &'static str {
+        match self {
+            PauseCheckoutMode::GitCheckout => "Git Checkout",
+            PauseCheckoutMode::GitCheckoutDetached => "Git Checkout Detached",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PauseContext {
+    pub mode: PauseCheckoutMode,
+    pub checkout_command: String,
+    pub worktree_removed: bool,
+    pub instruction_message: String,
+    #[serde(default)]
+    pub last_resume_error: Option<String>,
 }
 
 impl AgentStatus {
@@ -197,6 +226,7 @@ impl AgentStatus {
             AgentStatus::Idle => "○",
             AgentStatus::Error(_) => "✗",
             AgentStatus::Stopped => "○",
+            AgentStatus::Paused => "⏸",
         }
     }
 
@@ -208,6 +238,7 @@ impl AgentStatus {
             AgentStatus::Idle => "Idle",
             AgentStatus::Error(_) => "Error",
             AgentStatus::Stopped => "Stopped",
+            AgentStatus::Paused => "PAUSED",
         }
     }
 }
@@ -264,6 +295,8 @@ pub struct Agent {
     pub pending_status: Option<AgentStatus>,
     #[serde(skip)]
     pub pending_status_count: u32,
+    #[serde(default)]
+    pub pause_context: Option<PauseContext>,
 }
 
 impl Agent {
@@ -298,6 +331,7 @@ impl Agent {
             status_reason: None,
             pending_status: None,
             pending_status_count: 0,
+            pause_context: None,
         }
     }
 

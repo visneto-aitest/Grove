@@ -7,9 +7,9 @@ use ratatui::{
 };
 
 use crate::app::{
-    ActionButtonType, AiAgent, AutomationConfig, CodebergCiProvider, Config, ConfigLogLevel,
-    GitProvider, ProjectMgmtProvider, ResetType, SettingsCategory, SettingsField, SettingsItem,
-    SettingsState, SettingsTab, UiConfig, WorktreeLocation,
+    ActionButtonType, AiAgent, AutomationConfig, CheckoutStrategy, CodebergCiProvider, Config,
+    ConfigLogLevel, GitProvider, ProjectMgmtProvider, ResetType, SettingsCategory, SettingsField,
+    SettingsItem, SettingsState, SettingsTab, UiConfig, WorktreeLocation,
 };
 use crate::ui::components::file_browser;
 use crate::ui::helpers::{
@@ -646,6 +646,16 @@ impl<'a> SettingsModal<'a> {
                 self.state.repo_config.git.main_branch.clone(),
                 false,
             ),
+            SettingsField::CheckoutStrategy => (
+                "Checkout Strategy".to_string(),
+                self.state
+                    .repo_config
+                    .git
+                    .checkout_strategy
+                    .display_name()
+                    .to_string(),
+                false,
+            ),
             SettingsField::WorktreeSymlinks => (
                 "Symlinks".to_string(),
                 self.state
@@ -1128,6 +1138,10 @@ impl<'a> SettingsModal<'a> {
             SettingsField::ProjectMgmtProvider => ProjectMgmtProvider::all()
                 .iter()
                 .map(|p| p.display_name().to_string())
+                .collect(),
+            SettingsField::CheckoutStrategy => CheckoutStrategy::all()
+                .iter()
+                .map(|c| c.display_name().to_string())
                 .collect(),
             SettingsField::AutomationOnTaskAssign
             | SettingsField::AutomationOnPush

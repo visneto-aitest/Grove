@@ -30,6 +30,12 @@ pub enum Action {
     CopyWorktreePath {
         id: Uuid,
     },
+    PauseAgent {
+        id: Uuid,
+    },
+    ResumeAgent {
+        id: Uuid,
+    },
     ToggleContinueSession {
         id: Uuid,
     },
@@ -214,6 +220,20 @@ pub enum Action {
     UpdateGitDiffContent(Option<String>),
 
     DeleteAgentComplete {
+        id: Uuid,
+        success: bool,
+        message: String,
+    },
+
+    PauseAgentComplete {
+        id: Uuid,
+        success: bool,
+        message: String,
+        pause_context: Option<crate::agent::PauseContext>,
+        clipboard_text: Option<String>,
+    },
+
+    ResumeAgentComplete {
         id: Uuid,
         success: bool,
         message: String,

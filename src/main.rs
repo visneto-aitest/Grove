@@ -21,10 +21,11 @@ use uuid::Uuid;
 
 use grove::agent::{
     detect_checklist_progress, detect_mr_url, detect_status_for_agent, Agent, AgentManager,
-    AgentStatus, ForegroundProcess, ProjectMgmtTaskStatus, StatusDetection,
+    AgentStatus, ForegroundProcess, PauseCheckoutMode, PauseContext, ProjectMgmtTaskStatus,
+    StatusDetection,
 };
 use grove::app::{
-    Action, AppState, Config, InputMode, PreviewTab, ProjectMgmtProvider, StatusOption,
+    Action, AiAgent, AppState, Config, InputMode, PreviewTab, ProjectMgmtProvider, StatusOption,
     TaskListItem, TaskStatusDropdownState, Toast, ToastLevel,
 };
 use grove::core::git_providers::codeberg::OptionalCodebergClient;
@@ -100,6 +101,56 @@ fn matches_keybind(key: crossterm::event::KeyEvent, keybind: &grove::app::config
     };
 
     key_matches
+}
+
+fn build_ai_resume_command(
+    ai_agent: &AiAgent,
+    worktree_path: &str,
+    ai_session_id: Option<&str>,
+) -> String {
+    let cached_session = ai_session_id.and_then(|cached| {
+        let trimmed = cached.trim();
+        if trimmed.is_empty() {
+            None
+        } else {
+            Some(trimmed.to_string())
+        }
+    });
+
+    match ai_agent {
+        AiAgent::Opencode => {
+            let session_id = cached_session.or_else(|| {
+                grove::opencode::find_session_by_directory(worktree_path)
+                    .ok()
+                    .flatten()
+            });
+            grove::opencode::build_command_with_session(ai_agent.command(), session_id.as_deref())
+        }
+        AiAgent::ClaudeCode => {
+            let session_id = cached_session.or_else(|| {
+                grove::claude_code::find_session_by_directory(worktree_path)
+                    .ok()
+                    .flatten()
+            });
+            grove::claude_code::build_resume_command(ai_agent.command(), session_id.as_deref())
+        }
+        AiAgent::Codex => {
+            let session_id = cached_session.or_else(|| {
+                grove::codex::find_session_by_directory(worktree_path)
+                    .ok()
+                    .flatten()
+            });
+            grove::codex::build_resume_command(ai_agent.command(), session_id.as_deref())
+        }
+        AiAgent::Gemini => {
+            let session_id = cached_session.or_else(|| {
+                grove::gemini::find_session_by_directory(worktree_path)
+                    .ok()
+                    .flatten()
+            });
+            grove::gemini::build_resume_command(ai_agent.command(), session_id.as_deref())
+        }
+    }
 }
 
 #[tokio::main]
@@ -332,88 +383,11 @@ async fn main() -> Result<()> {
 
                 let session = grove::tmux::TmuxSession::new(&tmux_session);
                 if !session.exists() {
-                    let command = match &ai_agent {
-                        grove::app::config::AiAgent::Opencode => {
-                            let session_id = ai_session_id
-                                .as_deref()
-                                .and_then(|cached| {
-                                    if cached.is_empty() {
-                                        None
-                                    } else {
-                                        Some(cached.to_string())
-                                    }
-                                })
-                                .or_else(|| {
-                                    grove::opencode::find_session_by_directory(&worktree_path)
-                                        .ok()
-                                        .flatten()
-                                });
-                            grove::opencode::build_command_with_session(
-                                ai_agent.command(),
-                                session_id.as_deref(),
-                            )
-                        }
-                        grove::app::config::AiAgent::ClaudeCode => {
-                            let session_id = ai_session_id
-                                .as_deref()
-                                .and_then(|cached| {
-                                    if cached.is_empty() {
-                                        None
-                                    } else {
-                                        Some(cached.to_string())
-                                    }
-                                })
-                                .or_else(|| {
-                                    grove::claude_code::find_session_by_directory(&worktree_path)
-                                        .ok()
-                                        .flatten()
-                                });
-                            grove::claude_code::build_resume_command(
-                                ai_agent.command(),
-                                session_id.as_deref(),
-                            )
-                        }
-                        grove::app::config::AiAgent::Codex => {
-                            let session_id = ai_session_id
-                                .as_deref()
-                                .and_then(|cached| {
-                                    if cached.is_empty() {
-                                        None
-                                    } else {
-                                        Some(cached.to_string())
-                                    }
-                                })
-                                .or_else(|| {
-                                    grove::codex::find_session_by_directory(&worktree_path)
-                                        .ok()
-                                        .flatten()
-                                });
-                            grove::codex::build_resume_command(
-                                ai_agent.command(),
-                                session_id.as_deref(),
-                            )
-                        }
-                        grove::app::config::AiAgent::Gemini => {
-                            let session_id = ai_session_id
-                                .as_deref()
-                                .and_then(|cached| {
-                                    if cached.is_empty() {
-                                        None
-                                    } else {
-                                        Some(cached.to_string())
-                                    }
-                                })
-                                .or_else(|| {
-                                    grove::gemini::find_session_by_directory(&worktree_path)
-                                        .ok()
-                                        .flatten()
-                                });
-                            grove::gemini::build_resume_command(
-                                ai_agent.command(),
-                                session_id.as_deref(),
-                            )
-                        }
-                    };
+                    let command = build_ai_resume_command(
+                        &ai_agent,
+                        &worktree_path,
+                        ai_session_id.as_deref(),
+                    );
 
                     if let Err(e) = session.create(&worktree_path, &command) {
                         eprintln!("Failed to create tmux session for '{}': {}", name, e);
@@ -1373,8 +1347,23 @@ fn handle_key_event(key: crossterm::event::KeyEvent, state: &AppState) -> Option
         return Some(Action::SelectLast);
     }
 
-    // Refresh selected agent status
-    if matches_keybind(key, &kb.refresh_task_list) && state.selected_agent_id().is_some() {
+    let is_paused = state
+        .selected_agent()
+        .map(|a| matches!(a.status, grove::agent::AgentStatus::Paused))
+        .unwrap_or(false);
+
+    // Resume paused agent (keybind-configurable)
+    if is_paused && matches_keybind(key, &kb.resume) {
+        return state
+            .selected_agent_id()
+            .map(|id| Action::ResumeAgent { id });
+    }
+
+    // Refresh selected agent status (disabled when paused)
+    if !is_paused
+        && matches_keybind(key, &kb.refresh_task_list)
+        && state.selected_agent_id().is_some()
+    {
         return Some(Action::RefreshSelected);
     }
 
@@ -2394,6 +2383,13 @@ async fn process_action(
             const STATUS_DEBOUNCE_THRESHOLD: u32 = 4;
 
             if let Some(agent) = state.agents.get_mut(&id) {
+                if agent.pause_context.is_some() {
+                    if let Some(reason) = status_reason {
+                        agent.status_reason = Some(reason);
+                    }
+                    return Ok(false);
+                }
+
                 let old_label = agent.status.label();
                 let name = agent.name.clone();
 
@@ -2452,27 +2448,136 @@ async fn process_action(
         }
 
         Action::CopyWorktreePath { id } => {
-            if let Some(agent) = state.agents.get(&id) {
-                let worktree_path = agent.worktree_path.clone();
-                let cd_cmd = format!("cd {}", worktree_path);
+            let strategy = state.settings.repo_config.git.checkout_strategy;
 
-                if let Some(clipboard) = state.get_clipboard() {
-                    match clipboard.set_text(&cd_cmd) {
-                        Ok(()) => {
-                            state.log_info(format!("Copied: {}", cd_cmd));
-                            state.show_success(format!("Copied: {}", cd_cmd));
-                        }
-                        Err(e) => {
-                            state.log_error(format!("Clipboard error: {}", e));
-                            state.show_error(format!("Copy failed: {}", e));
+            if let Some(agent) = state.agents.get(&id) {
+                match strategy {
+                    grove::app::CheckoutStrategy::CdToWorktree => {
+                        let worktree_path = agent.worktree_path.clone();
+                        let cd_cmd = format!("cd {}", worktree_path);
+
+                        if let Some(clipboard) = state.get_clipboard() {
+                            match clipboard.set_text(&cd_cmd) {
+                                Ok(()) => {
+                                    state.log_info(format!("Copied: {}", cd_cmd));
+                                    state.show_success(format!("Copied: {}", cd_cmd));
+                                }
+                                Err(e) => {
+                                    state.log_error(format!("Clipboard error: {}", e));
+                                    state.show_error(format!("Copy failed: {}", e));
+                                }
+                            }
+                        } else {
+                            state.log_error("Failed to access clipboard".to_string());
+                            state.show_error("Clipboard unavailable".to_string());
                         }
                     }
-                } else {
-                    state.log_error("Failed to access clipboard".to_string());
-                    state.show_error("Clipboard unavailable".to_string());
+                    grove::app::CheckoutStrategy::GitCheckout => {
+                        let name = agent.name.clone();
+                        let branch = agent.branch.clone();
+                        let worktree_path = agent.worktree_path.clone();
+                        let repo_path = state.repo_path.clone();
+                        let worktree_base = state.worktree_base.clone();
+
+                        state.log_info(format!("Processing checkout for agent '{}'...", name));
+                        state.loading_message = Some(format!("Checking out '{}'...", name));
+
+                        let tx = action_tx.clone();
+                        tokio::spawn(async move {
+                            let sync = grove::git::GitSync::new(&worktree_path);
+
+                            if let Err(e) = sync.auto_commit() {
+                                tracing::warn!("Auto-commit failed: {}", e);
+                            }
+
+                            let worktree = grove::git::Worktree::new(&repo_path, worktree_base);
+                            if let Err(e) = worktree.remove(&worktree_path) {
+                                let _ = tx.send(Action::PauseAgentComplete {
+                                    id,
+                                    success: false,
+                                    message: format!("Failed to remove worktree: {}", e),
+                                    pause_context: None,
+                                    clipboard_text: None,
+                                });
+                                return;
+                            }
+
+                            let checkout_cmd = format!("git checkout {}", branch);
+                            let message = "Worktree removed.".to_string();
+                            let pause_context = PauseContext {
+                                mode: PauseCheckoutMode::GitCheckout,
+                                checkout_command: checkout_cmd.clone(),
+                                worktree_removed: true,
+                                instruction_message: "Run checkout in your repo, then resume to restore the worktree.".to_string(),
+                                last_resume_error: None,
+                            };
+
+                            let _ = tx.send(Action::PauseAgentComplete {
+                                id,
+                                success: true,
+                                message,
+                                pause_context: Some(pause_context),
+                                clipboard_text: Some(checkout_cmd),
+                            });
+                        });
+                    }
+                    grove::app::CheckoutStrategy::GitCheckoutDetached => {
+                        let name = agent.name.clone();
+                        let worktree_path = agent.worktree_path.clone();
+
+                        state.log_info(format!(
+                            "Processing detached checkout for agent '{}'...",
+                            name
+                        ));
+                        state.loading_message = Some(format!("Processing '{}'...", name));
+
+                        let tx = action_tx.clone();
+                        tokio::spawn(async move {
+                            let sync = grove::git::GitSync::new(&worktree_path);
+
+                            if let Err(e) = sync.auto_commit() {
+                                tracing::warn!("Auto-commit failed: {}", e);
+                            }
+
+                            let head_sha = std::process::Command::new("git")
+                                .args(["-C", &worktree_path, "rev-parse", "HEAD"])
+                                .output()
+                                .ok()
+                                .and_then(|output| {
+                                    if output.status.success() {
+                                        String::from_utf8(output.stdout).ok()
+                                    } else {
+                                        None
+                                    }
+                                })
+                                .map(|s| s.trim().to_string())
+                                .unwrap_or_else(|| "HEAD".to_string());
+
+                            let checkout_cmd = format!("git checkout --detach {}", head_sha);
+                            let message = "Prepared detached checkout command.".to_string();
+                            let pause_context = PauseContext {
+                                mode: PauseCheckoutMode::GitCheckoutDetached,
+                                checkout_command: checkout_cmd.clone(),
+                                worktree_removed: false,
+                                instruction_message:
+                                    "Run detached checkout where needed, then resume.".to_string(),
+                                last_resume_error: None,
+                            };
+
+                            let _ = tx.send(Action::PauseAgentComplete {
+                                id,
+                                success: true,
+                                message,
+                                pause_context: Some(pause_context),
+                                clipboard_text: Some(checkout_cmd),
+                            });
+                        });
+                    }
                 }
             }
         }
+
+        Action::PauseAgent { .. } => {}
 
         Action::ToggleContinueSession { id } => {
             let (continue_session, agent_name) = {
@@ -6411,6 +6516,160 @@ async fn process_action(
             state.show_info(message);
         }
 
+        Action::PauseAgentComplete {
+            id,
+            success,
+            message,
+            pause_context,
+            clipboard_text,
+        } => {
+            state.loading_message = None;
+
+            let mut final_message = message;
+            if success {
+                if let Some(agent) = state.agents.get_mut(&id) {
+                    agent.status = grove::agent::AgentStatus::Paused;
+                    agent.pause_context = pause_context;
+                }
+
+                if let Some(cmd) = clipboard_text {
+                    if let Some(clipboard) = state.get_clipboard() {
+                        match clipboard.set_text(&cmd) {
+                            Ok(()) => {
+                                final_message =
+                                    format!("{} Checkout command copied: {}", final_message, cmd);
+                            }
+                            Err(e) => {
+                                state.log_error(format!("Clipboard error: {}", e));
+                                final_message = format!("{} Run: {}", final_message, cmd);
+                            }
+                        }
+                    } else {
+                        state.log_error("Failed to access clipboard".to_string());
+                        final_message = format!("{} Run: {}", final_message, cmd);
+                    }
+                }
+
+                state.log_info(&final_message);
+            } else {
+                state.log_error(&final_message);
+            }
+            state.show_info(final_message);
+        }
+
+        Action::ResumeAgent { id } => {
+            if let Some(agent) = state.agents.get_mut(&id) {
+                if let Some(ctx) = agent.pause_context.as_mut() {
+                    ctx.last_resume_error = None;
+                }
+            }
+
+            let agent_info = state.agents.get(&id).map(|a| {
+                (
+                    a.name.clone(),
+                    a.branch.clone(),
+                    a.worktree_path.clone(),
+                    a.tmux_session.clone(),
+                    a.ai_session_id.clone(),
+                )
+            });
+
+            if let Some((name, branch, worktree_path, tmux_session, ai_session_id)) = agent_info {
+                state.log_info(format!("Resuming agent '{}'...", name));
+                state.loading_message = Some(format!("Resuming '{}'...", name));
+
+                let tx = action_tx.clone();
+                let repo_path = state.repo_path.clone();
+                let worktree_base = state.worktree_base.clone();
+                let ai_agent = state.config.global.ai_agent.clone();
+                let worktree_symlinks = state
+                    .settings
+                    .repo_config
+                    .dev_server
+                    .worktree_symlinks
+                    .clone();
+                tokio::spawn(async move {
+                    let worktree_exists = std::path::Path::new(&worktree_path).exists();
+
+                    if !worktree_exists {
+                        let worktree = grove::git::Worktree::new(&repo_path, worktree_base);
+                        let restore_result = worktree.create(&branch).map(|_| ());
+
+                        match restore_result {
+                            Ok(()) => {
+                                if let Err(e) =
+                                    worktree.create_symlinks(&worktree_path, &worktree_symlinks)
+                                {
+                                    tracing::warn!("Failed to create symlinks: {}", e);
+                                }
+                            }
+                            Err(e) => {
+                                let _ = tx.send(Action::ResumeAgentComplete {
+                                    id,
+                                    success: false,
+                                    message: format!("Failed to restore worktree: {}", e),
+                                });
+                                return;
+                            }
+                        };
+                    }
+
+                    let command = build_ai_resume_command(
+                        &ai_agent,
+                        &worktree_path,
+                        ai_session_id.as_deref(),
+                    );
+                    let session = grove::tmux::TmuxSession::new(&tmux_session);
+
+                    let resume_result = if session.exists() {
+                        Ok(())
+                    } else {
+                        session.create(&worktree_path, &command)
+                    };
+
+                    match resume_result {
+                        Ok(()) => {
+                            let _ = tx.send(Action::ResumeAgentComplete {
+                                id,
+                                success: true,
+                                message: format!("Resumed agent '{}'", name),
+                            });
+                        }
+                        Err(e) => {
+                            let _ = tx.send(Action::ResumeAgentComplete {
+                                id,
+                                success: false,
+                                message: format!("Failed to prepare tmux session: {}", e),
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
+        Action::ResumeAgentComplete {
+            id,
+            success,
+            message,
+        } => {
+            state.loading_message = None;
+            if success {
+                if let Some(agent) = state.agents.get_mut(&id) {
+                    agent.status = grove::agent::AgentStatus::Idle;
+                    agent.pause_context = None;
+                }
+                state.log_info(&message);
+            } else {
+                if let Some(agent) = state.agents.get_mut(&id) {
+                    if let Some(ctx) = agent.pause_context.as_mut() {
+                        ctx.last_resume_error = Some(message.clone());
+                    }
+                }
+                state.log_error(&message);
+            }
+            state.show_info(message);
+        }
+
         // Settings actions
         Action::ToggleSettings => {
             if state.settings.active {
@@ -6526,6 +6785,9 @@ async fn process_action(
                         grove::app::SettingsField::ProjectMgmtProvider => {
                             grove::app::ProjectMgmtProvider::all().len()
                         }
+                        grove::app::SettingsField::CheckoutStrategy => {
+                            grove::app::CheckoutStrategy::all().len()
+                        }
                         grove::app::SettingsField::AutomationOnTaskAssign
                         | grove::app::SettingsField::AutomationOnPush
                         | grove::app::SettingsField::AutomationOnDelete => {
@@ -6609,6 +6871,16 @@ async fn process_action(
                 grove::app::SettingsField::MainBranch => {
                     state.settings.editing_text = true;
                     state.settings.text_buffer = state.settings.repo_config.git.main_branch.clone();
+                }
+                grove::app::SettingsField::CheckoutStrategy => {
+                    let current = &state.settings.repo_config.git.checkout_strategy;
+                    let idx = grove::app::CheckoutStrategy::all()
+                        .iter()
+                        .position(|s| s == current)
+                        .unwrap_or(0);
+                    state.settings.dropdown = grove::app::DropdownState::Open {
+                        selected_index: idx,
+                    };
                 }
                 grove::app::SettingsField::WorktreeSymlinks => {
                     state.settings.init_file_browser(&state.repo_path);
@@ -7560,6 +7832,13 @@ async fn process_action(
                         {
                             state.settings.repo_config.project_mgmt.provider = *provider;
                             let _ = action_tx.send(Action::LoadAutomationStatusOptions);
+                        }
+                    }
+                    grove::app::SettingsField::CheckoutStrategy => {
+                        if let Some(strategy) =
+                            grove::app::CheckoutStrategy::all().get(selected_index)
+                        {
+                            state.settings.repo_config.git.checkout_strategy = *strategy;
                         }
                     }
                     grove::app::SettingsField::AutomationOnTaskAssign => {

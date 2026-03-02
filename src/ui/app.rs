@@ -17,9 +17,9 @@ use super::components::{
     render_confirm_modal, render_input_modal, AgentListWidget, ColumnSelectorWidget,
     DevServerViewWidget, DevServerWarningModal, DiffViewWidget, EmptyDevServerWidget,
     EmptyDiffWidget, EmptyOutputWidget, GitSetupModal, GlobalSetupWizard, HelpOverlay,
-    LoadingOverlay, OutputViewWidget, PmSetupModal, PmStatusDebugOverlay, ProjectSetupWizard,
-    SettingsModal, StatusBarWidget, StatusDebugOverlay, StatusDropdown, SystemMetricsWidget,
-    TaskListModal, TaskReassignmentWarningModal, ToastWidget, TutorialWizard,
+    LoadingOverlay, OutputViewWidget, PausePreviewOverlay, PmSetupModal, PmStatusDebugOverlay,
+    ProjectSetupWizard, SettingsModal, StatusBarWidget, StatusDebugOverlay, StatusDropdown,
+    SystemMetricsWidget, TaskListModal, TaskReassignmentWarningModal, ToastWidget, TutorialWizard,
 };
 
 #[derive(Clone)]
@@ -504,6 +504,18 @@ impl<'a> AppWidget<'a> {
             PreviewTab::Preview => self.render_preview_content(frame, chunks[1]),
             PreviewTab::GitDiff => self.render_gitdiff_content(frame, chunks[1]),
             PreviewTab::DevServer => self.render_devserver_content(frame, chunks[1]),
+        }
+
+        if let Some(agent) = self.state.selected_agent() {
+            if let Some(pause_context) = &agent.pause_context {
+                PausePreviewOverlay::render(
+                    frame,
+                    chunks[1],
+                    &agent.name,
+                    pause_context,
+                    &self.state.config.keybinds.resume.display_short(),
+                );
+            }
         }
     }
 

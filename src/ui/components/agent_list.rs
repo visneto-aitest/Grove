@@ -399,6 +399,12 @@ impl<'a> AgentListWidget<'a> {
                 "○ Stopped".to_string(),
                 Style::default().fg(Color::DarkGray),
             ),
+            AgentStatus::Paused => (
+                "⏸ Paused".to_string(),
+                Style::default()
+                    .fg(Color::Blue)
+                    .add_modifier(Modifier::BOLD),
+            ),
         }
     }
 
