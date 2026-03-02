@@ -39,12 +39,14 @@ impl PausePreviewOverlay {
         let error_lines = if let Some(lines) = &wrapped_error_lines {
             if lines.is_empty() {
                 2
-            } else if lines.len() == 1
-                && label.chars().count() + lines[0].chars().count() <= available_width
-            {
-                2 // spacer + inline label+text
             } else {
-                2 + lines.len() // spacer + label + wrapped lines
+                let single_inline = lines.len() == 1
+                    && label.chars().count() + lines[0].chars().count() <= available_width;
+                if single_inline {
+                    2 // spacer + inline label+text
+                } else {
+                    2 + lines.len() // spacer + label + wrapped lines
+                }
             }
         } else {
             0
