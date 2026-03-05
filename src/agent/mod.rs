@@ -7,4 +7,6 @@ pub use detector::{
     detect_status_with_process, ForegroundProcess, StatusDetection,
 };
 pub use manager::AgentManager;
-pub use model::{Agent, AgentStatus, ProjectMgmtTaskStatus, StatusReason};
+pub use model::{
+    Agent, AgentStatus, PauseCheckoutMode, PauseContext, ProjectMgmtTaskStatus, StatusReason,
+};

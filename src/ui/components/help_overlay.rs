@@ -92,6 +92,10 @@ impl<'a> HelpOverlay<'a> {
                 kb.copy_path.display_short()
             )),
             Line::from(format!(
+                "  {:8} Resume paused checkout",
+                kb.resume.display_short()
+            )),
+            Line::from(format!(
                 "  {:8} Merge main into branch",
                 kb.merge.display_short()
             )),

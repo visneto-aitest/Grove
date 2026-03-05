@@ -132,6 +132,7 @@ pub enum SettingsField {
     CodebergCiProvider,
     BranchPrefix,
     MainBranch,
+    CheckoutStrategy,
     WorktreeSymlinks,
     ProjectMgmtProvider,
     SetupPm,
@@ -177,6 +178,7 @@ pub enum SettingsField {
     KbSetNote,
     KbYank,
     KbCopyPath,
+    KbResume,
     KbMerge,
     KbPush,
     KbFetch,
@@ -389,6 +391,7 @@ impl SettingsField {
             | SettingsField::CodebergCiProvider
             | SettingsField::BranchPrefix
             | SettingsField::MainBranch
+            | SettingsField::CheckoutStrategy
             | SettingsField::SetupGit => SettingsTab::Git,
             SettingsField::ProjectMgmtProvider
             | SettingsField::SetupPm
@@ -431,6 +434,7 @@ impl SettingsField {
             | SettingsField::KbSetNote
             | SettingsField::KbYank
             | SettingsField::KbCopyPath
+            | SettingsField::KbResume
             | SettingsField::KbMerge
             | SettingsField::KbPush
             | SettingsField::KbFetch
@@ -503,6 +507,7 @@ impl SettingsField {
             SettingsField::KbSetNote => Some("Set Note"),
             SettingsField::KbYank => Some("Copy Name"),
             SettingsField::KbCopyPath => Some("Copy Cd Command"),
+            SettingsField::KbResume => Some("Resume Agent"),
             SettingsField::KbMerge => Some("Merge Main"),
             SettingsField::KbPush => Some("Push Changes"),
             SettingsField::KbFetch => Some("Fetch Remote"),
@@ -595,6 +600,7 @@ impl SettingsItem {
                 items.push(SettingsItem::Category(SettingsCategory::GitConfig));
                 items.push(SettingsItem::Field(SettingsField::BranchPrefix));
                 items.push(SettingsItem::Field(SettingsField::MainBranch));
+                items.push(SettingsItem::Field(SettingsField::CheckoutStrategy));
                 items.push(SettingsItem::ActionButton(ActionButtonType::ResetTab));
                 items
             }
@@ -685,6 +691,7 @@ impl SettingsItem {
                 SettingsItem::Field(SettingsField::KbYank),
                 SettingsItem::Category(SettingsCategory::KeybindGit),
                 SettingsItem::Field(SettingsField::KbCopyPath),
+                SettingsItem::Field(SettingsField::KbResume),
                 SettingsItem::Field(SettingsField::KbMerge),
                 SettingsItem::Field(SettingsField::KbPush),
                 SettingsItem::Field(SettingsField::KbFetch),
@@ -1093,6 +1100,7 @@ impl SettingsState {
             SettingsField::KbSetNote => Some(&self.pending_keybinds.set_note),
             SettingsField::KbYank => Some(&self.pending_keybinds.yank),
             SettingsField::KbCopyPath => Some(&self.pending_keybinds.copy_path),
+            SettingsField::KbResume => Some(&self.pending_keybinds.resume),
             SettingsField::KbMerge => Some(&self.pending_keybinds.merge),
             SettingsField::KbPush => Some(&self.pending_keybinds.push),
             SettingsField::KbFetch => Some(&self.pending_keybinds.fetch),
@@ -1126,6 +1134,7 @@ impl SettingsState {
             SettingsField::KbSetNote => self.pending_keybinds.set_note = keybind,
             SettingsField::KbYank => self.pending_keybinds.yank = keybind,
             SettingsField::KbCopyPath => self.pending_keybinds.copy_path = keybind,
+            SettingsField::KbResume => self.pending_keybinds.resume = keybind,
             SettingsField::KbMerge => self.pending_keybinds.merge = keybind,
             SettingsField::KbPush => self.pending_keybinds.push = keybind,
             SettingsField::KbFetch => self.pending_keybinds.fetch = keybind,

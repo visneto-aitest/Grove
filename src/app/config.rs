@@ -105,6 +105,43 @@ impl CodebergCiProvider {
     }
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "kebab-case")]
+pub enum CheckoutStrategy {
+    #[default]
+    CdToWorktree,
+    GitCheckout,
+    GitCheckoutDetached,
+}
+
+impl CheckoutStrategy {
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            CheckoutStrategy::CdToWorktree => "CD to Worktree",
+            CheckoutStrategy::GitCheckout => "Git Checkout",
+            CheckoutStrategy::GitCheckoutDetached => "Git Checkout Detached",
+        }
+    }
+
+    pub fn description(&self) -> &'static str {
+        match self {
+            CheckoutStrategy::CdToWorktree => "Copy cd command to worktree directory",
+            CheckoutStrategy::GitCheckout => "Commit, remove worktree, copy git checkout command",
+            CheckoutStrategy::GitCheckoutDetached => {
+                "Commit and copy detached checkout command (keeps worktree)"
+            }
+        }
+    }
+
+    pub fn all() -> &'static [CheckoutStrategy] {
+        &[
+            CheckoutStrategy::CdToWorktree,
+            CheckoutStrategy::GitCheckout,
+            CheckoutStrategy::GitCheckoutDetached,
+        ]
+    }
+}
+
 impl GitProvider {
     pub fn display_name(&self) -> &'static str {
         match self {
@@ -779,6 +816,10 @@ pub struct Keybinds {
     pub yank: Keybind,
     #[serde(default = "default_copy_path")]
     pub copy_path: Keybind,
+    #[serde(default = "default_resume")]
+    pub resume: Keybind,
+    #[serde(default = "default_toggle_continue")]
+    pub toggle_continue: Keybind,
     #[serde(default = "default_merge")]
     pub merge: Keybind,
     #[serde(default = "default_push")]
@@ -849,6 +890,15 @@ fn default_yank() -> Keybind {
 fn default_copy_path() -> Keybind {
     Keybind::new("c")
 }
+
+fn default_resume() -> Keybind {
+    Keybind::new("r")
+}
+
+fn default_toggle_continue() -> Keybind {
+    Keybind::with_modifiers("c", vec!["Shift".to_string()])
+}
+
 fn default_merge() -> Keybind {
     Keybind::new("m")
 }
@@ -920,6 +970,8 @@ impl Default for Keybinds {
             set_note: default_set_note(),
             yank: default_yank(),
             copy_path: default_copy_path(),
+            resume: default_resume(),
+            toggle_continue: default_toggle_continue(),
             merge: default_merge(),
             push: default_push(),
             fetch: default_fetch(),
@@ -956,6 +1008,8 @@ impl Keybinds {
             ("set_note", &self.set_note),
             ("yank", &self.yank),
             ("copy_path", &self.copy_path),
+            ("resume", &self.resume),
+            ("toggle_continue", &self.toggle_continue),
             ("merge", &self.merge),
             ("push", &self.push),
             ("fetch", &self.fetch),
@@ -1284,6 +1338,8 @@ pub struct RepoGitConfig {
     #[serde(default = "default_main_branch")]
     pub main_branch: String,
     #[serde(default)]
+    pub checkout_strategy: CheckoutStrategy,
+    #[serde(default)]
     pub gitlab: RepoGitLabConfig,
     #[serde(default)]
     pub github: RepoGitHubConfig,
@@ -1305,6 +1361,7 @@ impl Default for RepoGitConfig {
             provider: GitProvider::default(),
             branch_prefix: default_branch_prefix(),
             main_branch: default_main_branch(),
+            checkout_strategy: CheckoutStrategy::default(),
             gitlab: RepoGitLabConfig::default(),
             github: RepoGitHubConfig::default(),
             codeberg: RepoCodebergConfig::default(),

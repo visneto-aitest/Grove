@@ -5,9 +5,9 @@ pub mod task_list;
 
 pub use action::{Action, InputMode};
 pub use config::{
-    AiAgent, AutomationActionType, AutomationConfig, CodebergCiProvider, Config, DevServerConfig,
-    GitProvider, GlobalConfig, LogLevel as ConfigLogLevel, ProjectMgmtProvider, RepoConfig,
-    UiConfig, WorktreeLocation,
+    AiAgent, AutomationActionType, AutomationConfig, CheckoutStrategy, CodebergCiProvider, Config,
+    DevServerConfig, GitProvider, GlobalConfig, LogLevel as ConfigLogLevel, ProjectMgmtProvider,
+    RepoConfig, UiConfig, WorktreeLocation,
 };
 pub use state::{
     ActionButtonType, AppState, DevServerWarning, DropdownState, GitSetupState, GitSetupStep,

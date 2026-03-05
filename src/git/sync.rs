@@ -209,4 +209,46 @@ impl GitSync {
 
         Ok(String::from_utf8_lossy(&output.stdout).to_string())
     }
+
+    /// Stage all changes for commit.
+    pub fn add_all(&self) -> Result<()> {
+        let output = Command::new("git")
+            .args(["add", "-A"])
+            .current_dir(&self.worktree_path)
+            .output()
+            .context("Failed to execute git add")?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            anyhow::bail!("Git add failed: {}", stderr);
+        }
+
+        Ok(())
+    }
+
+    /// Commit staged changes with the given message.
+    pub fn commit(&self, message: &str) -> Result<()> {
+        let output = Command::new("git")
+            .args(["commit", "-m", message])
+            .current_dir(&self.worktree_path)
+            .output()
+            .context("Failed to execute git commit")?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            if stderr.contains("nothing to commit") {
+                return Ok(());
+            }
+            anyhow::bail!("Git commit failed: {}", stderr);
+        }
+
+        Ok(())
+    }
+
+    /// Auto-commit all changes with default message.
+    pub fn auto_commit(&self) -> Result<()> {
+        self.add_all()?;
+        self.commit("WIP: auto-save before checkout")?;
+        Ok(())
+    }
 }
