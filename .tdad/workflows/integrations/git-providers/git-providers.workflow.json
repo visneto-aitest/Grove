@@ -1,0 +1,120 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "id": "create-github-pr",
+      "workflowId": "integrations/git-providers",
+      "title": "Create GitHub PR",
+      "description": "POST /api/integrations/github/pr with {title, head, base, body}. Creates pull request on GitHub. Returns {number, url, state}. Uses GITHUB_TOKEN.",
+      "nodeType": "feature",
+      "fileName": "create-github-pr",
+      "position": { "x": 100, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "get-github-pr-status",
+      "workflowId": "integrations/git-providers",
+      "title": "Get GitHub PR Status",
+      "description": "GET /api/integrations/github/pr/:number. Returns {number, title, state, merged, checks: []}. Shows CI status checks.",
+      "nodeType": "feature",
+      "fileName": "get-github-pr-status",
+      "position": { "x": 300, "y": 100 },
+      "dependencies": ["create-github-pr"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "list-github-issues",
+      "workflowId": "integrations/git-providers",
+      "title": "List GitHub Issues",
+      "description": "GET /api/integrations/github/issues. Returns array of {number, title, state, labels}. Filters by state (open/closed).",
+      "nodeType": "feature",
+      "fileName": "list-github-issues",
+      "position": { "x": 500, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "create-gitlab-mr",
+      "workflowId": "integrations/git-providers",
+      "title": "Create GitLab MR",
+      "description": "POST /api/integrations/gitlab/mr with {title, sourceBranch, targetBranch, description}. Creates merge request on GitLab. Returns {iid, url, state}. Uses GITLAB_TOKEN.",
+      "nodeType": "feature",
+      "fileName": "create-gitlab-mr",
+      "position": { "x": 100, "y": 250 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "get-gitlab-mr-status",
+      "workflowId": "integrations/git-providers",
+      "title": "Get GitLab MR Status",
+      "description": "GET /api/integrations/gitlab/mr/:iid. Returns {iid, title, state, merged, pipelines: []}. Shows pipeline status.",
+      "nodeType": "feature",
+      "fileName": "get-gitlab-mr-status",
+      "position": { "x": 300, "y": 250 },
+      "dependencies": ["create-gitlab-mr"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "list-gitlab-issues",
+      "workflowId": "integrations/git-providers",
+      "title": "List GitLab Issues",
+      "description": "GET /api/integrations/gitlab/issues. Returns array of {iid, title, state, labels}. Filters by state (opened/closed).",
+      "nodeType": "feature",
+      "fileName": "list-gitlab-issues",
+      "position": { "x": 500, "y": 250 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "create-codeberg-mr",
+      "workflowId": "integrations/git-providers",
+      "title": "Create Codeberg MR",
+      "description": "POST /api/integrations/codeberg/mr with {title, sourceBranch, targetBranch, description}. Creates pull request on Codeberg/Forgejo. Returns {id, url, state}. Uses CODEBERG_TOKEN.",
+      "nodeType": "feature",
+      "fileName": "create-codeberg-mr",
+      "position": { "x": 100, "y": 400 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "get-codeberg-mr-status",
+      "workflowId": "integrations/git-providers",
+      "title": "Get Codeberg MR Status",
+      "description": "GET /api/integrations/codeberg/mr/:id. Returns {id, title, state, merged, checks: []}. Shows CI/pipeline status.",
+      "nodeType": "feature",
+      "fileName": "get-codeberg-mr-status",
+      "position": { "x": 300, "y": 400 },
+      "dependencies": ["create-codeberg-mr"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "get-pipeline-status",
+      "workflowId": "integrations/git-providers",
+      "title": "Get Pipeline Status",
+      "description": "GET /api/integrations/:provider/pipeline/:id. Returns {id, state, jobs: [], duration, url}. Provider: github, gitlab, codeberg.",
+      "nodeType": "feature",
+      "fileName": "get-pipeline-status",
+      "position": { "x": 500, "y": 400 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "detect-provider",
+      "workflowId": "integrations/git-providers",
+      "title": "Detect Provider",
+      "description": "On app startup. Parses git remote URL to detect provider (github, gitlab, codeberg). Returns {provider, owner, repo}.",
+      "nodeType": "feature",
+      "fileName": "detect-provider",
+      "position": { "x": 100, "y": 550 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    }
+  ],
+  "edges": [
+    { "id": "github-pr-to-status", "source": "create-github-pr", "target": "get-github-pr-status" },
+    { "id": "gitlab-mr-to-status", "source": "create-gitlab-mr", "target": "get-gitlab-mr-status" },
+    { "id": "codeberg-mr-to-status", "source": "create-codeberg-mr", "target": "get-codeberg-mr-status" }
+  ]
+}

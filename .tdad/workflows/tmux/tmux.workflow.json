@@ -1,0 +1,77 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "id": "create-tmux-session",
+      "workflowId": "tmux",
+      "title": "Create Tmux Session",
+      "description": "POST /api/tmux/session with {name, worktreePath, command}. Creates new tmux session with specified name. Attaches to worktree directory. Returns {name, created: true}.",
+      "nodeType": "feature",
+      "fileName": "create-tmux-session",
+      "position": { "x": 100, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "list-tmux-sessions",
+      "workflowId": "tmux",
+      "title": "List Tmux Sessions",
+      "description": "GET /api/tmux/sessions. Returns array of {name, worktreePath, attached: boolean, createdAt}. Lists all tmux sessions managed by Grove.",
+      "nodeType": "feature",
+      "fileName": "list-tmux-sessions",
+      "position": { "x": 300, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "kill-tmux-session",
+      "workflowId": "tmux",
+      "title": "Kill Tmux Session",
+      "description": "DELETE /api/tmux/session/:name. Kills tmux session. Returns {killed: true}. No error if session doesn't exist.",
+      "nodeType": "feature",
+      "fileName": "kill-tmux-session",
+      "position": { "x": 500, "y": 100 },
+      "dependencies": ["list-tmux-sessions"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "send-to-tmux",
+      "workflowId": "tmux",
+      "title": "Send To Tmux",
+      "description": "POST /api/tmux/session/:name/send with {command}. Sends command to tmux session. Returns {sent: true}. Command is typed into session.",
+      "nodeType": "feature",
+      "fileName": "send-to-tmux",
+      "position": { "x": 100, "y": 250 },
+      "dependencies": ["list-tmux-sessions"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "capture-tmux-output",
+      "workflowId": "tmux",
+      "title": "Capture Tmux Output",
+      "description": "GET /api/tmux/session/:name/output. Returns {output, cursorPosition}. Captures current terminal buffer. Used for status detection.",
+      "nodeType": "feature",
+      "fileName": "capture-tmux-output",
+      "position": { "x": 300, "y": 250 },
+      "dependencies": ["list-tmux-sessions"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "attach-tmux-session",
+      "workflowId": "tmux",
+      "title": "Attach Tmux Session",
+      "description": "When user presses Enter on agent. Attaches to tmux session, passing through keystrokes. Terminal takes over full screen. Detach with Ctrl+B then D.",
+      "nodeType": "feature",
+      "fileName": "attach-tmux-session",
+      "position": { "x": 500, "y": 250 },
+      "dependencies": ["list-tmux-sessions"],
+      "testLayers": ["ui"]
+    }
+  ],
+  "edges": [
+    { "id": "list-to-kill", "source": "list-tmux-sessions", "target": "kill-tmux-session" },
+    { "id": "list-to-send", "source": "list-tmux-sessions", "target": "send-to-tmux" },
+    { "id": "list-to-capture", "source": "list-tmux-sessions", "target": "capture-tmux-output" },
+    { "id": "list-to-attach", "source": "list-tmux-sessions", "target": "attach-tmux-session" }
+  ]
+}

@@ -11,6 +11,7 @@ pub use statuses::{fetch_status_options, FetchStatusError, ProjectClients};
 
 pub mod airtable;
 pub mod asana;
+pub mod beads;
 pub mod clickup;
 pub mod linear;
 pub mod notion;

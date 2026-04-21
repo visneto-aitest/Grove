@@ -9,6 +9,7 @@ use crate::core::git_providers::github::PullRequestStatus;
 use crate::core::git_providers::gitlab::MergeRequestStatus;
 use crate::core::projects::airtable::AirtableTaskStatus;
 use crate::core::projects::asana::AsanaTaskStatus;
+use crate::core::projects::beads::BeadsTaskStatus;
 use crate::core::projects::clickup::ClickUpTaskStatus;
 use crate::core::projects::linear::LinearTaskStatus;
 use crate::core::projects::notion::NotionTaskStatus;
@@ -33,6 +34,7 @@ pub enum ProjectMgmtTaskStatus {
     ClickUp(ClickUpTaskStatus),
     Airtable(AirtableTaskStatus),
     Linear(LinearTaskStatus),
+    Beads(BeadsTaskStatus),
 }
 
 impl ProjectMgmtTaskStatus {
@@ -44,6 +46,7 @@ impl ProjectMgmtTaskStatus {
             ProjectMgmtTaskStatus::ClickUp(s) => s.format_short(),
             ProjectMgmtTaskStatus::Airtable(s) => s.format_short(),
             ProjectMgmtTaskStatus::Linear(s) => s.format_short(),
+            ProjectMgmtTaskStatus::Beads(s) => s.format_short(),
         }
     }
 
@@ -56,6 +59,7 @@ impl ProjectMgmtTaskStatus {
             ProjectMgmtTaskStatus::ClickUp(s) => s.format_status_name(),
             ProjectMgmtTaskStatus::Airtable(s) => s.format_status_name(),
             ProjectMgmtTaskStatus::Linear(s) => s.format_status_name(),
+            ProjectMgmtTaskStatus::Beads(s) => s.format_status_name(),
         }
     }
 
@@ -68,6 +72,7 @@ impl ProjectMgmtTaskStatus {
             ProjectMgmtTaskStatus::ClickUp(s) => s.status_name_full(),
             ProjectMgmtTaskStatus::Airtable(s) => s.status_name_full(),
             ProjectMgmtTaskStatus::Linear(s) => s.status_name_full(),
+            ProjectMgmtTaskStatus::Beads(s) => s.status_name_full(),
         }
     }
 
@@ -82,6 +87,7 @@ impl ProjectMgmtTaskStatus {
             ProjectMgmtTaskStatus::ClickUp(s) => s.id(),
             ProjectMgmtTaskStatus::Airtable(s) => s.id(),
             ProjectMgmtTaskStatus::Linear(s) => s.id(),
+            ProjectMgmtTaskStatus::Beads(s) => s.id(),
             ProjectMgmtTaskStatus::None => None,
         }
     }
@@ -93,6 +99,7 @@ impl ProjectMgmtTaskStatus {
             ProjectMgmtTaskStatus::ClickUp(s) => s.name(),
             ProjectMgmtTaskStatus::Airtable(s) => s.name(),
             ProjectMgmtTaskStatus::Linear(s) => s.name(),
+            ProjectMgmtTaskStatus::Beads(s) => s.name(),
             ProjectMgmtTaskStatus::None => None,
         }
     }
@@ -104,6 +111,7 @@ impl ProjectMgmtTaskStatus {
             ProjectMgmtTaskStatus::ClickUp(s) => s.url(),
             ProjectMgmtTaskStatus::Airtable(s) => s.url(),
             ProjectMgmtTaskStatus::Linear(s) => s.url(),
+            ProjectMgmtTaskStatus::Beads(s) => s.url(),
             ProjectMgmtTaskStatus::None => None,
         }
     }
@@ -133,6 +141,13 @@ impl ProjectMgmtTaskStatus {
         matches!(
             self,
             ProjectMgmtTaskStatus::Linear(LinearTaskStatus::NotStarted { .. })
+        )
+    }
+
+    pub fn is_beads_not_started(&self) -> bool {
+        matches!(
+            self,
+            ProjectMgmtTaskStatus::Beads(BeadsTaskStatus::NotStarted { .. })
         )
     }
 
@@ -167,6 +182,13 @@ impl ProjectMgmtTaskStatus {
     pub fn as_linear(&self) -> Option<&LinearTaskStatus> {
         match self {
             ProjectMgmtTaskStatus::Linear(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn as_beads(&self) -> Option<&BeadsTaskStatus> {
+        match self {
+            ProjectMgmtTaskStatus::Beads(s) => Some(s),
             _ => None,
         }
     }

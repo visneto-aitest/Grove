@@ -1,0 +1,544 @@
+{
+  "_HOW_TO_USE": "Edit this file to control automation. Changes take effect immediately!",
+  "workflowId": "agents",
+  "folderId": null,
+  "status": "stopped",
+  "_SKIP_NODES": "Add status values here to skip those nodes. Example: [\"passed\", \"failed\"]",
+  "_SKIP_OPTIONS": "pending | running | passed | failed | skipped",
+  "skipStatuses": [
+    "passed"
+  ],
+  "_RETRY_SETTINGS": "Control how many times to retry failed nodes",
+  "retryConfig": {
+    "maxRetries": 10,
+    "retryDelayMs": 2000
+  },
+  "_EXECUTION": "Set concurrency > 1 to run multiple nodes in parallel",
+  "executionSettings": {
+    "concurrency": 1,
+    "sequentialTests": false,
+    "batchTestMode": false
+  },
+  "_NODES_HELP": "Reorder this array to change execution order. Edit each node status/modes as needed.",
+  "_NODE_STATUSES": "pending (not started) | running (in progress) | passed (success) | failed (error) | skipped (skipped)",
+  "_NODE_MODES": "bdd: Generate .feature file | test: Generate .test.js file | runFix: Run tests and auto-fix failures",
+  "nodes": [
+    {
+      "id": "create-agent",
+      "title": "Create Agent",
+      "folderPath": "agents",
+      "status": "running",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "render-agent-list",
+      "title": "Render Agent List",
+      "folderPath": "ui",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "create-worktree",
+      "title": "Create Worktree",
+      "folderPath": "git",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "list-asana-tasks",
+      "title": "List Asana Tasks",
+      "folderPath": "integrations/project-management",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "create-github-pr",
+      "title": "Create GitHub PR",
+      "folderPath": "integrations/git-providers",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "start-dev-server",
+      "title": "Start Dev Server",
+      "folderPath": "devserver",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "create-tmux-session",
+      "title": "Create Tmux Session",
+      "folderPath": "tmux",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "save-session",
+      "title": "Save Session",
+      "folderPath": "storage",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "process-rpc-message",
+      "title": "Process RPC Message",
+      "folderPath": "pi",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "list-agents",
+      "title": "List Agents",
+      "folderPath": "agents",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "render-output-view",
+      "title": "Render Output View",
+      "folderPath": "ui",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "list-worktrees",
+      "title": "List Worktrees",
+      "folderPath": "git",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "create-asana-task",
+      "title": "Create Asana Task",
+      "folderPath": "integrations/project-management",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "get-github-pr-status",
+      "title": "Get GitHub PR Status",
+      "folderPath": "integrations/git-providers",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "stop-dev-server",
+      "title": "Stop Dev Server",
+      "folderPath": "devserver",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "list-tmux-sessions",
+      "title": "List Tmux Sessions",
+      "folderPath": "tmux",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "load-session",
+      "title": "Load Session",
+      "folderPath": "storage",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "forward-to-pi",
+      "title": "Forward To PI",
+      "folderPath": "pi",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "get-agent-status",
+      "title": "Get Agent Status",
+      "folderPath": "agents",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "navigate-agent-list",
+      "title": "Navigate Agent List",
+      "folderPath": "ui",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "get-git-status",
+      "title": "Get Git Status",
+      "folderPath": "git",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "list-notion-tasks",
+      "title": "List Notion Tasks",
+      "folderPath": "integrations/project-management",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "list-github-issues",
+      "title": "List GitHub Issues",
+      "folderPath": "integrations/git-providers",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "restart-dev-server",
+      "title": "Restart Dev Server",
+      "folderPath": "devserver",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "kill-tmux-session",
+      "title": "Kill Tmux Session",
+      "folderPath": "tmux",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "list-sessions",
+      "title": "List Sessions",
+      "folderPath": "storage",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "add-pi-agent",
+      "title": "Add PI Agent",
+      "folderPath": "pi",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "detect-agent-status",
+      "title": "Detect Agent Status",
+      "folderPath": "agents",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "show-help-overlay",
+      "title": "Show Help Overlay",
+      "folderPath": "ui",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "push-changes",
+      "title": "Push Changes",
+      "folderPath": "git",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "create-notion-task",
+      "title": "Create Notion Task",
+      "folderPath": "integrations/project-management",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "create-gitlab-mr",
+      "title": "Create GitLab MR",
+      "folderPath": "integrations/git-providers",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "get-server-status",
+      "title": "Get Server Status",
+      "folderPath": "devserver",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "send-to-tmux",
+      "title": "Send To Tmux",
+      "folderPath": "tmux",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "delete-session",
+      "title": "Delete Session",
+      "folderPath": "storage",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "remove-pi-agent",
+      "title": "Remove PI Agent",
+      "folderPath": "pi",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "delete-agent",
+      "title": "Delete Agent",
+      "folderPath": "agents",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "show-settings",
+      "title": "Show Settings",
+      "folderPath": "ui",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "fetch-remote",
+      "title": "Fetch Remote",
+      "folderPath": "git",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "list-clickup-tasks",
+      "title": "List ClickUp Tasks",
+      "folderPath": "integrations/project-management",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "get-gitlab-mr-status",
+      "title": "Get GitLab MR Status",
+      "folderPath": "integrations/git-providers",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "monitor-server-health",
+      "title": "Monitor Server Health",
+      "folderPath": "devserver",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "capture-tmux-output",
+      "title": "Capture Tmux Output",
+      "folderPath": "tmux",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "restore-sessions",
+      "title": "Restore Sessions",
+      "folderPath": "storage",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "convert-action-to-rpc",
+      "title": "Convert Action To RPC",
+      "folderPath": "pi",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "attach-to-agent",
+      "title": "Attach To Agent",
+      "folderPath": "agents",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "render-status-bar",
+      "title": "Render Status Bar",
+      "folderPath": "ui",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "create-branch",
+      "title": "Create Branch",
+      "folderPath": "git",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "create-clickup-task",
+      "title": "Create ClickUp Task",
+      "folderPath": "integrations/project-management",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "list-gitlab-issues",
+      "title": "List GitLab Issues",
+      "folderPath": "integrations/git-providers",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "attach-tmux-session",
+      "title": "Attach Tmux Session",
+      "folderPath": "tmux",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "convert-rpc-to-action",
+      "title": "Convert RPC To Action",
+      "folderPath": "pi",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "set-agent-note",
+      "title": "Set Agent Note",
+      "folderPath": "agents",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "show-diff-view",
+      "title": "Show Diff View",
+      "folderPath": "ui",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "copy-worktree-cd",
+      "title": "Copy Worktree CD",
+      "folderPath": "git",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "list-airtable-records",
+      "title": "List Airtable Records",
+      "folderPath": "integrations/project-management",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "create-codeberg-mr",
+      "title": "Create Codeberg MR",
+      "folderPath": "integrations/git-providers",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "get-snapshot",
+      "title": "Get Snapshot",
+      "folderPath": "pi",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "copy-agent-info",
+      "title": "Copy Agent Info",
+      "folderPath": "agents",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "show-toast",
+      "title": "Show Toast",
+      "folderPath": "ui",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "merge-main",
+      "title": "Merge Main",
+      "folderPath": "git",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "create-airtable-record",
+      "title": "Create Airtable Record",
+      "folderPath": "integrations/project-management",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "get-codeberg-mr-status",
+      "title": "Get Codeberg MR Status",
+      "folderPath": "integrations/git-providers",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "execute-tool",
+      "title": "Execute Tool",
+      "folderPath": "pi",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "render-task-list",
+      "title": "Render Task List",
+      "folderPath": "ui",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "get-git-remote",
+      "title": "Get Git Remote",
+      "folderPath": "git",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "list-linear-issues",
+      "title": "List Linear Issues",
+      "folderPath": "integrations/project-management",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "get-pipeline-status",
+      "title": "Get Pipeline Status",
+      "folderPath": "integrations/git-providers",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "show-log-view",
+      "title": "Show Log View",
+      "folderPath": "ui",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "create-linear-issue",
+      "title": "Create Linear Issue",
+      "folderPath": "integrations/project-management",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "detect-provider",
+      "title": "Detect Provider",
+      "folderPath": "integrations/git-providers",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "render-system-metrics",
+      "title": "Render System Metrics",
+      "folderPath": "ui",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    },
+    {
+      "id": "link-task-to-agent",
+      "title": "Link Task To Agent",
+      "folderPath": "integrations/project-management",
+      "status": "pending",
+      "modes": { "bdd": true, "test": true, "runFix": true }
+    }
+  ],
+  "_PROGRESS_INFO": "Auto-updated by TDAD - shows current position in queue",
+  "currentIndex": -1,
+  "createdAt": "2026-04-15T20:44:03.460Z",
+  "updatedAt": "2026-04-15T21:36:28.313Z",
+  "startedAt": "2026-04-15T20:44:03.463Z",
+  "completedAt": "2026-04-15T21:36:28.313Z"
+}

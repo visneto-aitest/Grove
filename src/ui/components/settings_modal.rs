@@ -323,6 +323,15 @@ impl<'a> SettingsModal<'a> {
                                     ),
                                 ));
                             }
+                            ProjectMgmtProvider::Beads => {
+                                all_lines.push((
+                                    line_start + 1,
+                                    token_status_line(
+                                        "BEADS_TOKEN",
+                                        Config::beads_token().is_some(),
+                                    ),
+                                ));
+                            }
                         }
                     }
                 }

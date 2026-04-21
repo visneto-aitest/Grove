@@ -443,6 +443,7 @@ impl<'a> ProjectSetupWizard<'a> {
                 self.state.config.project_mgmt.airtable.base_id.is_some()
             }
             ProjectMgmtProvider::Linear => self.state.config.project_mgmt.linear.team_id.is_some(),
+            ProjectMgmtProvider::Beads => self.state.config.project_mgmt.beads.team_id.is_some(),
         }
     }
 }

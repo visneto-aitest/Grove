@@ -1,0 +1,100 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "id": "process-rpc-message",
+      "workflowId": "pi",
+      "title": "Process RPC Message",
+      "description": "When pi-session sends RPC message. Parses message type (ExecuteTool, GitOperation, AgentAction). Converts to Grove action. Returns vector of actions to process.",
+      "nodeType": "feature",
+      "fileName": "process-rpc-message",
+      "position": { "x": 100, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "forward-to-pi",
+      "workflowId": "pi",
+      "title": "Forward To PI",
+      "description": "When Grove action affects pi-agent. Converts Grove action to RPC message. Sends to pi-session. Returns {forwarded: true}.",
+      "nodeType": "feature",
+      "fileName": "forward-to-pi",
+      "position": { "x": 300, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "add-pi-agent",
+      "workflowId": "pi",
+      "title": "Add PI Agent",
+      "description": "POST /api/pi/agent with {agentId, name, branch, worktreePath}. Registers new pi-agent with session manager. Returns {registered: true}.",
+      "nodeType": "feature",
+      "fileName": "add-pi-agent",
+      "position": { "x": 500, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "remove-pi-agent",
+      "workflowId": "pi",
+      "title": "Remove PI Agent",
+      "description": "DELETE /api/pi/agent/:agentId. Unregisters pi-agent from session manager. Returns {removed: true}.",
+      "nodeType": "feature",
+      "fileName": "remove-pi-agent",
+      "position": { "x": 100, "y": 250 },
+      "dependencies": ["add-pi-agent"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "convert-action-to-rpc",
+      "workflowId": "pi",
+      "title": "Convert Action To RPC",
+      "description": "When forwarding Grove action. Converts Action enum to RpcMessage enum. Handles Action types: RefreshSelected, ToggleDiffView, OpenInEditor, etc.",
+      "nodeType": "feature",
+      "fileName": "convert-action-to-rpc",
+      "position": { "x": 300, "y": 250 },
+      "dependencies": ["forward-to-pi"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "convert-rpc-to-action",
+      "workflowId": "pi",
+      "title": "Convert RPC To Action",
+      "description": "When processing incoming RPC. Converts RpcMessage to Action enum. Handles message types: ExecuteTool, GitOperation, RequestSnapshot.",
+      "nodeType": "feature",
+      "fileName": "convert-rpc-to-action",
+      "position": { "x": 500, "y": 250 },
+      "dependencies": ["process-rpc-message"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "get-snapshot",
+      "workflowId": "pi",
+      "title": "Get Snapshot",
+      "description": "GET /api/pi/snapshot/:agentId. Returns {name, branch, worktreePath, status, outputBuffer, tmuxSession}. Used for state synchronization with pi-session.",
+      "nodeType": "feature",
+      "fileName": "get-snapshot",
+      "position": { "x": 100, "y": 400 },
+      "dependencies": ["add-pi-agent"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "execute-tool",
+      "workflowId": "pi",
+      "title": "Execute Tool",
+      "description": "When pi-session sends ExecuteTool RPC. Maps tool name to Grove action. Tools: git status, git diff, editor, file_ops, terminal, debug. Returns {executed: true}.",
+      "nodeType": "feature",
+      "fileName": "execute-tool",
+      "position": { "x": 300, "y": 400 },
+      "dependencies": ["process-rpc-message"],
+      "testLayers": ["api"]
+    }
+  ],
+  "edges": [
+    { "id": "add-to-remove", "source": "add-pi-agent", "target": "remove-pi-agent" },
+    { "id": "forward-to-convert", "source": "forward-to-pi", "target": "convert-action-to-rpc" },
+    { "id": "process-to-convert", "source": "process-rpc-message", "target": "convert-rpc-to-action" },
+    { "id": "add-to-snapshot", "source": "add-pi-agent", "target": "get-snapshot" },
+    { "id": "process-to-execute", "source": "process-rpc-message", "target": "execute-tool" }
+  ]
+}

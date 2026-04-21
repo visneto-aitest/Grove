@@ -107,6 +107,12 @@ impl<'a> PmSetupModal<'a> {
                 PmSetupStep::Project => "Complete",
                 PmSetupStep::Advanced => "Complete",
             },
+            ProjectMgmtProvider::Beads => match self.state.step {
+                PmSetupStep::Token => "API Token",
+                PmSetupStep::Workspace => "Workspace",
+                PmSetupStep::Project => "Team",
+                PmSetupStep::Advanced => "Complete",
+            },
             _ => match self.state.step {
                 PmSetupStep::Token => "API Token",
                 PmSetupStep::Workspace => "Workspace",
@@ -123,6 +129,7 @@ impl<'a> PmSetupModal<'a> {
             ProjectMgmtProvider::Asana => self.render_asana_content(),
             ProjectMgmtProvider::Clickup => self.render_clickup_content(),
             ProjectMgmtProvider::Airtable => self.render_airtable_content(),
+            ProjectMgmtProvider::Beads => self.render_beads_content(),
         };
 
         let paragraph = Paragraph::new(lines);
@@ -394,6 +401,46 @@ impl<'a> PmSetupModal<'a> {
             PmSetupStep::Token => self.render_linear_token_step(),
             PmSetupStep::Workspace | PmSetupStep::Project | PmSetupStep::Advanced => {
                 self.render_linear_team_step()
+            }
+        }
+    }
+
+    fn render_beads_content(&self) -> Vec<Line<'static>> {
+        match self.state.step {
+            PmSetupStep::Token => vec![
+                Line::from(""),
+                Line::from(Span::styled(
+                    "  Beads uses an API token for authentication.",
+                    Style::default()
+                        .fg(Color::White)
+                        .add_modifier(Modifier::BOLD),
+                )),
+                Line::from(""),
+                Line::from(Span::styled(
+                    "  1. Get token from: https://beads.xyz",
+                    Style::default().fg(Color::Gray),
+                )),
+                Line::from(""),
+                Line::from(Span::styled(
+                    "  2. Add to shell profile:",
+                    Style::default().fg(Color::White),
+                )),
+                Line::from(""),
+                Line::from(Span::styled(
+                    "    export BEADS_TOKEN=\"your_token\"",
+                    Style::default().fg(Color::Cyan),
+                )),
+                Line::from(""),
+            ],
+            PmSetupStep::Workspace | PmSetupStep::Project | PmSetupStep::Advanced => {
+                vec![
+                    Line::from(""),
+                    Line::from(Span::styled(
+                        "  Select workspace & team from your account.",
+                        Style::default().fg(Color::White),
+                    )),
+                    Line::from(""),
+                ]
             }
         }
     }

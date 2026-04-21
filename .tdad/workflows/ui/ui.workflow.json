@@ -1,0 +1,129 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "id": "render-agent-list",
+      "workflowId": "ui",
+      "title": "Render Agent List",
+      "description": "When agent list panel renders. Displays list of agents with columns: Name, Branch, Status, Output preview. Selected agent highlighted. Shows empty state 'No agents' when list empty.",
+      "nodeType": "feature",
+      "fileName": "render-agent-list",
+      "position": { "x": 100, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["ui"]
+    },
+    {
+      "id": "render-output-view",
+      "workflowId": "ui",
+      "title": "Render Output View",
+      "description": "When user selects agent. Displays real-time output buffer in scrollable view. Shows ANSI color codes rendered. Auto-scrolls to bottom when new output arrives.",
+      "nodeType": "feature",
+      "fileName": "render-output-view",
+      "position": { "x": 300, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["ui"]
+    },
+    {
+      "id": "navigate-agent-list",
+      "workflowId": "ui",
+      "title": "Navigate Agent List",
+      "description": "When user presses j/k or arrow keys. Moves selection up/down in agent list. Wraps at top/bottom. Shows selected agent details in output view.",
+      "nodeType": "feature",
+      "fileName": "navigate-agent-list",
+      "position": { "x": 500, "y": 100 },
+      "dependencies": ["render-agent-list"],
+      "testLayers": ["ui"]
+    },
+    {
+      "id": "show-help-overlay",
+      "workflowId": "ui",
+      "title": "Show Help Overlay",
+      "description": "When user presses '?'. Displays full keyboard shortcuts overlay with categories. Press 'q' or Escape to close. Shows all available keybinds.",
+      "nodeType": "feature",
+      "fileName": "show-help-overlay",
+      "position": { "x": 100, "y": 250 },
+      "dependencies": [],
+      "testLayers": ["ui"]
+    },
+    {
+      "id": "show-settings",
+      "workflowId": "ui",
+      "title": "Show Settings",
+      "description": "When user presses 'S'. Opens settings modal with tabs: General, Keybinds, Appearance. Changes apply immediately. Press Escape to close.",
+      "nodeType": "feature",
+      "fileName": "show-settings",
+      "position": { "x": 300, "y": 250 },
+      "dependencies": [],
+      "testLayers": ["ui"]
+    },
+    {
+      "id": "render-status-bar",
+      "workflowId": "ui",
+      "title": "Render Status Bar",
+      "description": "When status bar renders. Shows: Git branch, repo info, system metrics (CPU/Memory), current time. Positioned at bottom of screen.",
+      "nodeType": "feature",
+      "fileName": "render-status-bar",
+      "position": { "x": 500, "y": 250 },
+      "dependencies": [],
+      "testLayers": ["ui"]
+    },
+    {
+      "id": "show-diff-view",
+      "workflowId": "ui",
+      "title": "Show Diff View",
+      "description": "When user presses '/'. Toggles diff view panel showing uncommitted changes. Uses git diff output. Side-by-side or unified view toggle.",
+      "nodeType": "feature",
+      "fileName": "show-diff-view",
+      "position": { "x": 100, "y": 400 },
+      "dependencies": [],
+      "testLayers": ["ui"]
+    },
+    {
+      "id": "show-toast",
+      "workflowId": "ui",
+      "title": "Show Toast",
+      "description": "When action completes (copy, push, etc). Displays toast notification at bottom of screen. Auto-dismisses after 3 seconds. Types: success (green), error (red), info (blue).",
+      "nodeType": "feature",
+      "fileName": "show-toast",
+      "position": { "x": 300, "y": 400 },
+      "dependencies": [],
+      "testLayers": ["ui"]
+    },
+    {
+      "id": "render-task-list",
+      "workflowId": "ui",
+      "title": "Render Task List",
+      "description": "When user presses 't'. Toggles task list modal showing linked tasks from project management. Columns: Task ID, Title, Status, Assignee. Click to open in browser.",
+      "nodeType": "feature",
+      "fileName": "render-task-list",
+      "position": { "x": 500, "y": 400 },
+      "dependencies": [],
+      "testLayers": ["ui"]
+    },
+    {
+      "id": "show-log-view",
+      "workflowId": "ui",
+      "title": "Show Log View",
+      "description": "When user presses 'L'. Toggles log view overlay showing Grove application logs. Filterable by level: error, warn, info, debug. Shows timestamps.",
+      "nodeType": "feature",
+      "fileName": "show-log-view",
+      "position": { "x": 100, "y": 550 },
+      "dependencies": [],
+      "testLayers": ["ui"]
+    },
+    {
+      "id": "render-system-metrics",
+      "workflowId": "ui",
+      "title": "Render System Metrics",
+      "description": "When system metrics panel renders. Shows real-time CPU usage percentage and Memory usage percentage. Updates every second. Displayed in status bar or dedicated panel.",
+      "nodeType": "feature",
+      "fileName": "render-system-metrics",
+      "position": { "x": 300, "y": 550 },
+      "dependencies": [],
+      "testLayers": ["ui"]
+    }
+  ],
+  "edges": [
+    { "id": "list-to-navigate", "source": "render-agent-list", "target": "navigate-agent-list" }
+  ]
+}

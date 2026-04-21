@@ -5,6 +5,7 @@ use anyhow::Result;
 use crate::app::StatusOption;
 use crate::core::projects::airtable::OptionalAirtableClient;
 use crate::core::projects::asana::OptionalAsanaClient;
+use crate::core::projects::beads::OptionalBeadsClient;
 use crate::core::projects::clickup::OptionalClickUpClient;
 use crate::core::projects::linear::OptionalLinearClient;
 use crate::core::projects::notion::OptionalNotionClient;
@@ -15,6 +16,7 @@ pub struct ProjectClients {
     pub clickup: Arc<OptionalClickUpClient>,
     pub airtable: Arc<OptionalAirtableClient>,
     pub linear: Arc<OptionalLinearClient>,
+    pub beads: Arc<OptionalBeadsClient>,
 }
 
 #[derive(Debug)]
@@ -73,6 +75,9 @@ pub async fn fetch_status_options(
         }
         ProjectMgmtTaskStatus::Linear(linear_status) => {
             fetch_linear_status_options(linear_status, &clients.linear).await
+        }
+        ProjectMgmtTaskStatus::Beads(beads_status) => {
+            fetch_beads_status_options(beads_status, &clients.beads).await
         }
         ProjectMgmtTaskStatus::None => Err(FetchStatusError::NotLinked {
             provider: "None",
@@ -294,6 +299,57 @@ async fn fetch_linear_status_options(
             is_child: false,
         })
         .collect();
+
+    Ok(options)
+}
+
+async fn fetch_beads_status_options(
+    beads_status: &crate::core::projects::beads::BeadsTaskStatus,
+    client: &Arc<OptionalBeadsClient>,
+) -> Result<Vec<StatusOption>, FetchStatusError> {
+    if !client.is_configured().await {
+        return Err(FetchStatusError::NotConfigured {
+            provider: "Beads",
+            message: "Beads not configured. Set BEADS_TOKEN, workspace_id, and team_id.",
+        });
+    }
+
+    if beads_status.id().is_none() {
+        return Err(FetchStatusError::NotLinked {
+            provider: "Beads",
+            message: "No Beads issue linked to this agent",
+        });
+    }
+
+    // For now, return common status options as Beads status types are flexible
+    // In the future, this should fetch actual status options from the Beads API
+    let options: Vec<StatusOption> = vec![
+        StatusOption {
+            id: "backlog".to_string(),
+            name: "Backlog".to_string(),
+            is_child: false,
+        },
+        StatusOption {
+            id: "todo".to_string(),
+            name: "Todo".to_string(),
+            is_child: false,
+        },
+        StatusOption {
+            id: "in_progress".to_string(),
+            name: "In Progress".to_string(),
+            is_child: false,
+        },
+        StatusOption {
+            id: "done".to_string(),
+            name: "Done".to_string(),
+            is_child: false,
+        },
+        StatusOption {
+            id: "cancelled".to_string(),
+            name: "Cancelled".to_string(),
+            is_child: false,
+        },
+    ];
 
     Ok(options)
 }

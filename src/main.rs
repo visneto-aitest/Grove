@@ -41,6 +41,7 @@ use grove::core::projects::clickup::{
 use grove::core::projects::linear::{
     parse_linear_issue_id, LinearTaskStatus, OptionalLinearClient,
 };
+use grove::core::projects::beads::{OptionalBeadsClient, BeadsTaskStatus};
 use grove::core::projects::notion::{parse_notion_page_id, NotionTaskStatus, OptionalNotionClient};
 use grove::core::projects::{fetch_status_options, ProjectClients};
 use grove::devserver::DevServerManager;
@@ -1898,6 +1899,13 @@ fn handle_pm_setup_key(
                         Some(Action::PmSetupInputChar(ch))
                     }
                     KeyCode::Left => Some(Action::PmSetupToggleAdvanced),
+                    KeyCode::Char('v') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        if let Ok(text) = arboard::Clipboard::new().and_then(|mut c| c.get_text()) {
+                            Some(Action::PmSetupPaste(text))
+                        } else {
+                            None
+                        }
+                    }
                     _ => None,
                 }
             } else {
@@ -2002,6 +2010,13 @@ fn handle_git_setup_key(
             KeyCode::Esc => Some(Action::GitSetupCancelEdit),
             KeyCode::Enter => Some(Action::GitSetupConfirmEdit),
             KeyCode::Backspace => Some(Action::GitSetupBackspace),
+            KeyCode::Char('v') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                if let Ok(text) = arboard::Clipboard::new().and_then(|mut c| c.get_text()) {
+                    Some(Action::GitSetupPaste(text))
+                } else {
+                    None
+                }
+            }
             KeyCode::Char(c) => Some(Action::GitSetupInputChar(c)),
             _ => None,
         };
@@ -2241,6 +2256,15 @@ async fn process_action(
                                     status_name: task_item.status_name.clone(),
                                     url: task_item.url.clone(),
                                     is_subtask: task_item.is_subtask(),
+                                })
+                            }
+                            ProjectMgmtProvider::Beads => {
+                                ProjectMgmtTaskStatus::Beads(BeadsTaskStatus::NotStarted {
+                                    id: task_item.id.clone(),
+                                    identifier: task_item.name.split_whitespace().next().unwrap_or("").to_string(),
+                                    name: task_item.name.clone(),
+                                    status_name: task_item.status_name.clone(),
+                                    url: task_item.url.clone(),
                                 })
                             }
                         };
@@ -3317,6 +3341,9 @@ async fn process_action(
                         }
                     });
                 }
+                ProjectMgmtProvider::Beads => {
+                    // Not implemented - Beads integration not yet wired
+                }
             }
         }
 
@@ -3390,6 +3417,21 @@ async fn process_action(
                         Some(format!("Linear error: {}", message))
                     }
                     LinearTaskStatus::None => None,
+                },
+                ProjectMgmtTaskStatus::Beads(s) => match s {
+                    BeadsTaskStatus::NotStarted { name, .. } => {
+                        Some(format!("Beads task '{}' linked", name))
+                    }
+                    BeadsTaskStatus::InProgress { name, .. } => {
+                        Some(format!("Beads task '{}' in progress", name))
+                    }
+                    BeadsTaskStatus::Completed { name, .. } => {
+                        Some(format!("Beads task '{}' completed", name))
+                    }
+                    BeadsTaskStatus::Error { message, .. } => {
+                        Some(format!("Beads error: {}", message))
+                    }
+                    BeadsTaskStatus::None => None,
                 },
                 ProjectMgmtTaskStatus::None => None,
             };
@@ -4047,6 +4089,7 @@ async fn process_action(
                     clickup: clickup_client.clone(),
                     airtable: airtable_client.clone(),
                     linear: linear_client.clone(),
+                    beads: Arc::new(OptionalBeadsClient::new(None, 60)),
                 };
 
                 let agent_id = id;
@@ -4864,7 +4907,11 @@ async fn process_action(
 
             tokio::spawn(async move {
                 let result = match provider {
+                    ProjectMgmtProvider::Beads => Err("Beads integration not wired".to_string()),
                     ProjectMgmtProvider::Asana => {
+                        let _ = ();
+                    }
+                    _ => {}
                         match asana_client.get_project_tasks_with_subtasks().await {
                             Ok(tasks) => {
                                 let mut items: Vec<TaskListItem> = tasks
@@ -5086,6 +5133,9 @@ async fn process_action(
                                 Err(e) => Err(e.to_string()),
                             }
                         }
+                    }
+                    ProjectMgmtProvider::Beads => {
+                        Err("Beads integration not fully wired yet".to_string())
                     }
                     ProjectMgmtProvider::Clickup => {
                         if !clickup_client_status.is_configured().await {
@@ -5889,6 +5939,7 @@ async fn process_action(
                             ProjectMgmtProvider::Clickup => clickup_client.fetch_statuses().await,
                             ProjectMgmtProvider::Airtable => airtable_client.fetch_statuses().await,
                             ProjectMgmtProvider::Linear => linear_client.fetch_statuses().await,
+                            ProjectMgmtProvider::Beads => Err(anyhow::anyhow!("Beads not wired")),
                         };
 
                         match result {
@@ -8664,6 +8715,17 @@ async fn process_action(
             }
         }
 
+        // PI Session actions (handled elsewhere)
+        Action::PiStartSession { .. } => {}
+        Action::PiStopSession { .. } => {}
+        Action::PiSendMessage { .. } => {}
+        Action::PiReceiveOutput { .. } => {}
+
+        // Project Setup PM actions (handled elsewhere)
+        Action::ProjectSetupPmFetchUser => {}
+        Action::ProjectSetupPmUserFetched { .. } => {}
+        Action::ProjectSetupPmUserFetchError { .. } => {}
+
         // PM Setup Wizard Actions
         Action::OpenPmSetup => {
             state.pm_setup.active = true;
@@ -9090,6 +9152,17 @@ async fn process_action(
                 state.pm_setup.in_progress_state.pop();
             } else if state.pm_setup.field_index == 3 {
                 state.pm_setup.done_state.pop();
+            }
+        }
+        Action::PmSetupPaste(text) => {
+            for c in text.chars() {
+                if state.pm_setup.field_index == 1 {
+                    state.pm_setup.manual_team_id.push(c);
+                } else if state.pm_setup.field_index == 2 {
+                    state.pm_setup.in_progress_state.push(c);
+                } else if state.pm_setup.field_index == 3 {
+                    state.pm_setup.done_state.push(c);
+                }
             }
         }
         Action::PmSetupTeamsLoaded { teams } => {
@@ -9529,6 +9602,11 @@ async fn process_action(
         }
         Action::GitSetupBackspace => {
             state.git_setup.text_buffer.pop();
+        }
+        Action::GitSetupPaste(text) => {
+            for c in text.chars() {
+                state.git_setup.text_buffer.push(c);
+            }
         }
         Action::GitSetupComplete => {
             let provider = state.settings.repo_config.git.provider;

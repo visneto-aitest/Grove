@@ -27,13 +27,6 @@ pub enum Action {
         id: Uuid,
         output: String,
     },
-    ProjectSetupPmFetchUser,
-    ProjectSetupPmUserFetched {
-        username: String,
-    },
-    ProjectSetupPmUserFetchError {
-        message: String,
-    },
 
     PauseAgent {
         id: Uuid,
@@ -381,7 +374,6 @@ pub enum Action {
     PmSetupConfirmDropdown,
     PmSetupInputChar(char),
     PmSetupBackspace,
-    PmSetupPaste(String),
     PmSetupTeamsLoaded {
         teams: Vec<(String, String, String)>,
     },
@@ -415,7 +407,6 @@ pub enum Action {
     GitSetupCloseDropdown,
     GitSetupInputChar(char),
     GitSetupBackspace,
-    GitSetupPaste(String),
     GitSetupStartEdit,
     GitSetupCancelEdit,
     GitSetupConfirmEdit,

@@ -1,0 +1,109 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "id": "create-worktree",
+      "workflowId": "git",
+      "title": "Create Worktree",
+      "description": "POST /api/git/worktree with {branchName, path}. Creates new git worktree at specified path with new branch. Returns {branch, path, success: true}. Returns 400 if branch or path exists.",
+      "nodeType": "feature",
+      "fileName": "create-worktree",
+      "position": { "x": 100, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "list-worktrees",
+      "workflowId": "git",
+      "title": "List Worktrees",
+      "description": "GET /api/git/worktrees. Returns array of {path, branch, head}. Lists all git worktrees in current repo. Empty array if none exist.",
+      "nodeType": "feature",
+      "fileName": "list-worktrees",
+      "position": { "x": 300, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "get-git-status",
+      "workflowId": "git",
+      "title": "Get Git Status",
+      "description": "GET /api/git/status with {worktreePath}. Returns {branch, clean: boolean, staged: [], modified: [], untracked: []}. Shows working directory status. Returns 400 if not a git repo.",
+      "nodeType": "feature",
+      "fileName": "get-git-status",
+      "position": { "x": 500, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "push-changes",
+      "workflowId": "git",
+      "title": "Push Changes",
+      "description": "POST /api/git/push with {worktreePath, remote, branch}. Pushes local branch to remote. Returns {pushed: true, remote, branch}. Returns 409 if there are conflicts.",
+      "nodeType": "feature",
+      "fileName": "push-changes",
+      "position": { "x": 100, "y": 250 },
+      "dependencies": ["get-git-status"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "fetch-remote",
+      "workflowId": "git",
+      "title": "Fetch Remote",
+      "description": "POST /api/git/fetch with {worktreePath, remote}. Fetches latest from remote. Returns {fetched: true, updatedBranches: []}. Updates remote tracking refs.",
+      "nodeType": "feature",
+      "fileName": "fetch-remote",
+      "position": { "x": 300, "y": 250 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "create-branch",
+      "workflowId": "git",
+      "title": "Create Branch",
+      "description": "POST /api/git/branch with {name, baseBranch, worktreePath}. Creates new branch from baseBranch. Optionally creates worktree. Returns {name, created: true}.",
+      "nodeType": "feature",
+      "fileName": "create-branch",
+      "position": { "x": 500, "y": 250 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "copy-worktree-cd",
+      "workflowId": "git",
+      "title": "Copy Worktree CD",
+      "description": "When user presses 'c'. Copies 'cd /path/to/worktree' command to clipboard. Shows 'Copied!' toast. Used to navigate terminal to worktree.",
+      "nodeType": "feature",
+      "fileName": "copy-worktree-cd",
+      "position": { "x": 100, "y": 400 },
+      "dependencies": ["list-worktrees"],
+      "testLayers": ["ui"]
+    },
+    {
+      "id": "merge-main",
+      "workflowId": "git",
+      "title": "Merge Main",
+      "description": "POST /api/git/merge with {worktreePath, sourceBranch}. Merges main branch into current branch. Returns {merged: true, conflicts: []} or {conflict: true, conflictingFiles: []}.",
+      "nodeType": "feature",
+      "fileName": "merge-main",
+      "position": { "x": 300, "y": 400 },
+      "dependencies": ["get-git-status"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "get-git-remote",
+      "workflowId": "git",
+      "title": "Get Git Remote",
+      "description": "GET /api/git/remote. Returns {name, url, provider}. Detects git remote URL and infers provider (GitLab, GitHub, Codeberg). Used for MR/PR creation.",
+      "nodeType": "feature",
+      "fileName": "get-git-remote",
+      "position": { "x": 500, "y": 400 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    }
+  ],
+  "edges": [
+    { "id": "status-to-push", "source": "get-git-status", "target": "push-changes" },
+    { "id": "status-to-merge", "source": "get-git-status", "target": "merge-main" },
+    { "id": "worktrees-to-copy", "source": "list-worktrees", "target": "copy-worktree-cd" }
+  ]
+}

@@ -1,0 +1,170 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "id": "create-agent",
+      "workflowId": "agents",
+      "title": "Create Agent",
+      "description": "POST /api/agents with {branchName, worktreePath}. Creates new git branch, creates git worktree, starts tmux session, and launches AI agent. Returns {id, branchName, worktreePath, tmuxSession, status} on success. Returns 400 with {error: 'Branch already exists'} if branch exists.",
+      "nodeType": "feature",
+      "fileName": "create-agent",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "dependencies": [],
+      "testLayers": [
+        "api"
+      ]
+    },
+    {
+      "id": "list-agents",
+      "workflowId": "agents",
+      "title": "List Agents",
+      "description": "GET /api/agents. Returns array of {id, branchName, worktreePath, tmuxSession, status, createdAt, note} for all agents. Empty array if no agents exist.",
+      "nodeType": "feature",
+      "fileName": "list-agents",
+      "position": {
+        "x": 300,
+        "y": 100
+      },
+      "dependencies": [],
+      "testLayers": [
+        "api"
+      ]
+    },
+    {
+      "id": "get-agent-status",
+      "workflowId": "agents",
+      "title": "Get Agent Status",
+      "description": "GET /api/agents/:id/status. Returns {id, status, output, error, lastUpdated}. Status can be 'running', 'waiting', 'error', 'completed'. Returns 404 if agent not found.",
+      "nodeType": "feature",
+      "fileName": "get-agent-status",
+      "position": {
+        "x": 500,
+        "y": 100
+      },
+      "dependencies": [],
+      "testLayers": [
+        "api"
+      ]
+    },
+    {
+      "id": "detect-agent-status",
+      "workflowId": "agents",
+      "title": "Detect Agent Status",
+      "description": "When polling agent tmux session. Parses output buffer to detect if agent is running, waiting for input, errored, or completed. Returns detected status string.",
+      "nodeType": "feature",
+      "fileName": "detect-agent-status",
+      "position": {
+        "x": 100,
+        "y": 250
+      },
+      "dependencies": [
+        "get-agent-status"
+      ],
+      "testLayers": [
+        "api"
+      ]
+    },
+    {
+      "id": "delete-agent",
+      "workflowId": "agents",
+      "title": "Delete Agent",
+      "description": "DELETE /api/agents/:id. Kills tmux session, removes worktree (optional), deletes session file. Returns 204 on success. Returns 404 if agent not found.",
+      "nodeType": "feature",
+      "fileName": "delete-agent",
+      "position": {
+        "x": 300,
+        "y": 250
+      },
+      "dependencies": [
+        "get-agent-status"
+      ],
+      "testLayers": [
+        "api"
+      ]
+    },
+    {
+      "id": "attach-to-agent",
+      "workflowId": "agents",
+      "title": "Attach To Agent",
+      "description": "When user presses Enter on agent. Attaches to tmux session for selected agent. User can interact with agent terminal. Detach with Ctrl+B then D.",
+      "nodeType": "feature",
+      "fileName": "attach-to-agent",
+      "position": {
+        "x": 500,
+        "y": 250
+      },
+      "dependencies": [
+        "list-agents"
+      ],
+      "testLayers": [
+        "ui"
+      ]
+    },
+    {
+      "id": "set-agent-note",
+      "workflowId": "agents",
+      "title": "Set Agent Note",
+      "description": "PATCH /api/agents/:id/note with {note}. Updates custom note for agent. Returns updated agent object. Note is displayed in agent list.",
+      "nodeType": "feature",
+      "fileName": "set-agent-note",
+      "position": {
+        "x": 100,
+        "y": 400
+      },
+      "dependencies": [
+        "list-agents"
+      ],
+      "testLayers": [
+        "api"
+      ]
+    },
+    {
+      "id": "copy-agent-info",
+      "workflowId": "agents",
+      "title": "Copy Agent Info",
+      "description": "When user presses 'y' on agent. Copies agent name or branch name to clipboard. Shows 'Copied!' toast confirmation.",
+      "nodeType": "feature",
+      "fileName": "copy-agent-info",
+      "position": {
+        "x": 300,
+        "y": 400
+      },
+      "dependencies": [
+        "list-agents"
+      ],
+      "testLayers": [
+        "ui"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "status-to-detect",
+      "source": "get-agent-status",
+      "target": "detect-agent-status"
+    },
+    {
+      "id": "status-to-delete",
+      "source": "get-agent-status",
+      "target": "delete-agent"
+    },
+    {
+      "id": "list-to-attach",
+      "source": "list-agents",
+      "target": "attach-to-agent"
+    },
+    {
+      "id": "list-to-note",
+      "source": "list-agents",
+      "target": "set-agent-note"
+    },
+    {
+      "id": "list-to-copy",
+      "source": "list-agents",
+      "target": "copy-agent-info"
+    }
+  ]
+}

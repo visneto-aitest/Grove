@@ -214,6 +214,7 @@ pub enum SettingsCategory {
     Clickup,
     Airtable,
     Linear,
+    Beads,
     Prompts,
     DevServer,
     Automation,
@@ -335,6 +336,7 @@ impl SettingsCategory {
             SettingsCategory::Clickup => "ClickUp",
             SettingsCategory::Airtable => "Airtable",
             SettingsCategory::Linear => "Linear",
+            SettingsCategory::Beads => "Beads",
             SettingsCategory::Prompts => "Prompts",
             SettingsCategory::DevServer => "Dev Server",
             SettingsCategory::Automation => "Automation",
@@ -643,6 +645,9 @@ impl SettingsItem {
                         items.push(SettingsItem::Field(SettingsField::LinearTeamId));
                         items.push(SettingsItem::Field(SettingsField::LinearInProgressState));
                         items.push(SettingsItem::Field(SettingsField::LinearDoneState));
+                    }
+                    ProjectMgmtProvider::Beads => {
+                        items.push(SettingsItem::Category(SettingsCategory::Beads));
                     }
                 }
                 items.push(SettingsItem::ActionButton(ActionButtonType::ResetTab));

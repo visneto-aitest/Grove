@@ -1,0 +1,64 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "id": "save-session",
+      "workflowId": "storage",
+      "title": "Save Session",
+      "description": "POST /api/storage/session with {agentId, data}. Persists agent session to disk. Data includes: branchName, worktreePath, tmuxSession, note, createdAt. Returns {saved: true}.",
+      "nodeType": "feature",
+      "fileName": "save-session",
+      "position": { "x": 100, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "load-session",
+      "workflowId": "storage",
+      "title": "Load Session",
+      "description": "GET /api/storage/session/:agentId. Returns {agentId, branchName, worktreePath, tmuxSession, note, createdAt}. Returns 404 if session not found.",
+      "nodeType": "feature",
+      "fileName": "load-session",
+      "position": { "x": 300, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "list-sessions",
+      "workflowId": "storage",
+      "title": "List Sessions",
+      "description": "GET /api/storage/sessions. Returns array of {agentId, branchName, worktreePath, lastUpdated}. Lists all saved sessions. Used for session restoration on startup.",
+      "nodeType": "feature",
+      "fileName": "list-sessions",
+      "position": { "x": 500, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "delete-session",
+      "workflowId": "storage",
+      "title": "Delete Session",
+      "description": "DELETE /api/storage/session/:agentId. Deletes session file from disk. Returns {deleted: true}. No error if not exists.",
+      "nodeType": "feature",
+      "fileName": "delete-session",
+      "position": { "x": 100, "y": 250 },
+      "dependencies": ["list-sessions"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "restore-sessions",
+      "workflowId": "storage",
+      "title": "Restore Sessions",
+      "description": "On app startup. Loads all saved sessions, reconnects to tmux sessions if still running. Restores agent list to previous state.",
+      "nodeType": "feature",
+      "fileName": "restore-sessions",
+      "position": { "x": 300, "y": 250 },
+      "dependencies": ["list-sessions", "load-session"],
+      "testLayers": ["api"]
+    }
+  ],
+  "edges": [
+    { "id": "list-to-delete", "source": "list-sessions", "target": "delete-session" },
+    { "id": "list-to-restore", "source": "list-sessions", "target": "restore-sessions" }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "id": "start-dev-server",
+      "workflowId": "devserver",
+      "title": "Start Dev Server",
+      "description": "POST /api/devserver/start with {worktreePath, command, port}. Starts dev server in tmux session. Returns {pid, session, url}. Returns 400 if server already running.",
+      "nodeType": "feature",
+      "fileName": "start-dev-server",
+      "position": { "x": 100, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "stop-dev-server",
+      "workflowId": "devserver",
+      "title": "Stop Dev Server",
+      "description": "POST /api/devserver/stop with {worktreePath}. Kills dev server process. Returns {stopped: true}. No error if not running.",
+      "nodeType": "feature",
+      "fileName": "stop-dev-server",
+      "position": { "x": 300, "y": 100 },
+      "dependencies": ["start-dev-server"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "restart-dev-server",
+      "workflowId": "devserver",
+      "title": "Restart Dev Server",
+      "description": "POST /api/devserver/restart with {worktreePath}. Stops then starts dev server. Returns {restarted: true, newPid}. Preserves port configuration.",
+      "nodeType": "feature",
+      "fileName": "restart-dev-server",
+      "position": { "x": 500, "y": 100 },
+      "dependencies": ["start-dev-server"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "get-server-status",
+      "workflowId": "devserver",
+      "title": "Get Server Status",
+      "description": "GET /api/devserver/status/:worktreePath. Returns {running: boolean, pid, port, uptime, url}. Returns 404 if never started.",
+      "nodeType": "feature",
+      "fileName": "get-server-status",
+      "position": { "x": 100, "y": 250 },
+      "dependencies": ["start-dev-server"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "monitor-server-health",
+      "workflowId": "devserver",
+      "title": "Monitor Server Health",
+      "description": "On interval while server running. Pings server URL to check health. Returns {healthy: boolean, responseTime}. Updates status indicator in UI.",
+      "nodeType": "feature",
+      "fileName": "monitor-server-health",
+      "position": { "x": 300, "y": 250 },
+      "dependencies": ["get-server-status"],
+      "testLayers": ["api"]
+    }
+  ],
+  "edges": [
+    { "id": "start-to-stop", "source": "start-dev-server", "target": "stop-dev-server" },
+    { "id": "start-to-restart", "source": "start-dev-server", "target": "restart-dev-server" },
+    { "id": "start-to-status", "source": "start-dev-server", "target": "get-server-status" },
+    { "id": "status-to-monitor", "source": "get-server-status", "target": "monitor-server-health" }
+  ]
+}

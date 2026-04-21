@@ -1,0 +1,133 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "id": "list-asana-tasks",
+      "workflowId": "integrations/project-management",
+      "title": "List Asana Tasks",
+      "description": "GET /api/integrations/asana/tasks with {workspaceId, projectId}. Returns array of {gid, name, completed, due_on, assignee}. Uses ASANA_TOKEN environment variable.",
+      "nodeType": "feature",
+      "fileName": "list-asana-tasks",
+      "position": { "x": 100, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "create-asana-task",
+      "workflowId": "integrations/project-management",
+      "title": "Create Asana Task",
+      "description": "POST /api/integrations/asana/tasks with {name, projectId, assignee, dueDate}. Creates task in Asana. Returns {gid, name, permalink_url}.",
+      "nodeType": "feature",
+      "fileName": "create-asana-task",
+      "position": { "x": 300, "y": 100 },
+      "dependencies": ["list-asana-tasks"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "list-notion-tasks",
+      "workflowId": "integrations/project-management",
+      "title": "List Notion Tasks",
+      "description": "GET /api/integrations/notion/tasks with {databaseId}. Returns array of {id, title, status, assignee, dueDate} from Notion database. Uses NOTION_TOKEN.",
+      "nodeType": "feature",
+      "fileName": "list-notion-tasks",
+      "position": { "x": 500, "y": 100 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "create-notion-task",
+      "workflowId": "integrations/project-management",
+      "title": "Create Notion Task",
+      "description": "POST /api/integrations/notion/tasks with {title, status, databaseId}. Creates page in Notion database. Returns {id, url}.",
+      "nodeType": "feature",
+      "fileName": "create-notion-task",
+      "position": { "x": 100, "y": 250 },
+      "dependencies": ["list-notion-tasks"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "list-clickup-tasks",
+      "workflowId": "integrations/project-management",
+      "title": "List ClickUp Tasks",
+      "description": "GET /api/integrations/clickup/tasks with {listId}. Returns array of {id, name, status, assignee, due_date}. Uses CLICKUP_TOKEN.",
+      "nodeType": "feature",
+      "fileName": "list-clickup-tasks",
+      "position": { "x": 300, "y": 250 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "create-clickup-task",
+      "workflowId": "integrations/project-management",
+      "title": "Create ClickUp Task",
+      "description": "POST /api/integrations/clickup/tasks with {name, listId, assignee}. Creates task in ClickUp. Returns {id, url}.",
+      "nodeType": "feature",
+      "fileName": "create-clickup-task",
+      "position": { "x": 500, "y": 250 },
+      "dependencies": ["list-clickup-tasks"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "list-airtable-records",
+      "workflowId": "integrations/project-management",
+      "title": "List Airtable Records",
+      "description": "GET /api/integrations/airtable/records with {baseId, tableId}. Returns array of {id, fields} from Airtable. Uses AIRTABLE_TOKEN.",
+      "nodeType": "feature",
+      "fileName": "list-airtable-records",
+      "position": { "x": 100, "y": 400 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "create-airtable-record",
+      "workflowId": "integrations/project-management",
+      "title": "Create Airtable Record",
+      "description": "POST /api/integrations/airtable/records with {baseId, tableId, fields}. Creates record in Airtable. Returns {id, createdTime}.",
+      "nodeType": "feature",
+      "fileName": "create-airtable-record",
+      "position": { "x": 300, "y": 400 },
+      "dependencies": ["list-airtable-records"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "list-linear-issues",
+      "workflowId": "integrations/project-management",
+      "title": "List Linear Issues",
+      "description": "GET /api/integrations/linear/issues with {teamId}. Returns array of {id, title, state, assignee, dueDate}. Uses LINEAR_TOKEN.",
+      "nodeType": "feature",
+      "fileName": "list-linear-issues",
+      "position": { "x": 500, "y": 400 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "create-linear-issue",
+      "workflowId": "integrations/project-management",
+      "title": "Create Linear Issue",
+      "description": "POST /api/integrations/linear/issues with {title, teamId, assignee}. Creates issue in Linear. Returns {id, url}.",
+      "nodeType": "feature",
+      "fileName": "create-linear-issue",
+      "position": { "x": 100, "y": 550 },
+      "dependencies": ["list-linear-issues"],
+      "testLayers": ["api"]
+    },
+    {
+      "id": "link-task-to-agent",
+      "workflowId": "integrations/project-management",
+      "title": "Link Task To Agent",
+      "description": "POST /api/integrations/tasks/:id/link with {agentId, branchName}. Updates task with agent branch reference. Shows in task description or custom field.",
+      "nodeType": "feature",
+      "fileName": "link-task-to-agent",
+      "position": { "x": 300, "y": 550 },
+      "dependencies": [],
+      "testLayers": ["api"]
+    }
+  ],
+  "edges": [
+    { "id": "asana-list-to-create", "source": "list-asana-tasks", "target": "create-asana-task" },
+    { "id": "notion-list-to-create", "source": "list-notion-tasks", "target": "create-notion-task" },
+    { "id": "clickup-list-to-create", "source": "list-clickup-tasks", "target": "create-clickup-task" },
+    { "id": "airtable-list-to-create", "source": "list-airtable-records", "target": "create-airtable-record" },
+    { "id": "linear-list-to-create", "source": "list-linear-issues", "target": "create-linear-issue" }
+  ]
+}

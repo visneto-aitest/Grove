@@ -1,0 +1,180 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "id": "agents",
+      "workflowId": "root",
+      "title": "Agent Management",
+      "description": "AI agent lifecycle, status detection, and management",
+      "nodeType": "folder",
+      "folderPath": "agents",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "dependencies": [],
+      "children": [
+        "create-agent",
+        "list-agents",
+        "get-agent-status",
+        "detect-agent-status",
+        "delete-agent",
+        "attach-to-agent",
+        "set-agent-note",
+        "copy-agent-info"
+      ]
+    },
+    {
+      "id": "ui",
+      "workflowId": "root",
+      "title": "User Interface",
+      "description": "TUI components and rendering",
+      "nodeType": "folder",
+      "folderPath": "ui",
+      "position": {
+        "x": 300,
+        "y": 100
+      },
+      "dependencies": [],
+      "children": [
+        "render-agent-list",
+        "render-output-view",
+        "navigate-agent-list",
+        "show-help-overlay",
+        "show-settings",
+        "render-status-bar",
+        "show-diff-view",
+        "show-toast",
+        "render-task-list",
+        "show-log-view",
+        "render-system-metrics"
+      ]
+    },
+    {
+      "id": "git",
+      "workflowId": "root",
+      "title": "Git Operations",
+      "description": "Git worktree management and git operations",
+      "nodeType": "folder",
+      "folderPath": "git",
+      "position": {
+        "x": 500,
+        "y": 100
+      },
+      "dependencies": [],
+      "children": [
+        "create-worktree",
+        "list-worktrees",
+        "get-git-status",
+        "push-changes",
+        "fetch-remote",
+        "create-branch",
+        "copy-worktree-cd",
+        "merge-main",
+        "get-git-remote"
+      ]
+    },
+    {
+      "id": "integrations",
+      "workflowId": "root",
+      "title": "Integrations",
+      "description": "External service integrations",
+      "nodeType": "folder",
+      "folderPath": "integrations",
+      "position": {
+        "x": 700,
+        "y": 100
+      },
+      "dependencies": [],
+      "children": [
+        "project-management",
+        "git-providers"
+      ]
+    },
+    {
+      "id": "devserver",
+      "workflowId": "root",
+      "title": "Dev Server",
+      "description": "Development server management",
+      "nodeType": "folder",
+      "folderPath": "devserver",
+      "position": {
+        "x": 100,
+        "y": 300
+      },
+      "dependencies": [],
+      "children": [
+        "start-dev-server",
+        "stop-dev-server",
+        "restart-dev-server",
+        "get-server-status",
+        "monitor-server-health"
+      ]
+    },
+    {
+      "id": "tmux",
+      "workflowId": "root",
+      "title": "Tmux Session",
+      "description": "Terminal session management",
+      "nodeType": "folder",
+      "folderPath": "tmux",
+      "position": {
+        "x": 300,
+        "y": 300
+      },
+      "dependencies": [],
+      "children": [
+        "create-tmux-session",
+        "list-tmux-sessions",
+        "kill-tmux-session",
+        "send-to-tmux",
+        "capture-tmux-output",
+        "attach-tmux-session"
+      ]
+    },
+    {
+      "id": "storage",
+      "workflowId": "root",
+      "title": "Storage",
+      "description": "Session persistence and storage",
+      "nodeType": "folder",
+      "folderPath": "storage",
+      "position": {
+        "x": 500,
+        "y": 300
+      },
+      "dependencies": [],
+      "children": [
+        "save-session",
+        "load-session",
+        "list-sessions",
+        "delete-session",
+        "restore-sessions"
+      ]
+    },
+    {
+      "id": "pi",
+      "workflowId": "root",
+      "title": "PI Agent",
+      "description": "Pi-coding agent integration",
+      "nodeType": "folder",
+      "folderPath": "pi",
+      "position": {
+        "x": 700,
+        "y": 300
+      },
+      "dependencies": [],
+      "children": [
+        "process-rpc-message",
+        "forward-to-pi",
+        "add-pi-agent",
+        "remove-pi-agent",
+        "convert-action-to-rpc",
+        "convert-rpc-to-action",
+        "get-snapshot",
+        "execute-tool"
+      ]
+    }
+  ],
+  "edges": []
+}

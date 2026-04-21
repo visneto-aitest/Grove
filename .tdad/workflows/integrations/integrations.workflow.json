@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "nodes": [
+    {
+      "id": "project-management",
+      "workflowId": "integrations",
+      "title": "Project Management",
+      "description": "Task management integrations (Asana, Notion, ClickUp, Airtable, Linear)",
+      "nodeType": "folder",
+      "folderPath": "integrations/project-management",
+      "position": { "x": 100, "y": 100 },
+      "dependencies": []
+    },
+    {
+      "id": "git-providers",
+      "workflowId": "integrations",
+      "title": "Git Providers",
+      "description": "Git provider integrations (GitLab, GitHub, Codeberg)",
+      "nodeType": "folder",
+      "folderPath": "integrations/git-providers",
+      "position": { "x": 300, "y": 100 },
+      "dependencies": []
+    }
+  ],
+  "edges": []
+}

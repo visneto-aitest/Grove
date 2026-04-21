@@ -169,6 +169,7 @@ pub enum ProjectMgmtProvider {
     Clickup,
     Airtable,
     Linear,
+    Beads,
 }
 
 impl ProjectMgmtProvider {
@@ -179,6 +180,7 @@ impl ProjectMgmtProvider {
             ProjectMgmtProvider::Clickup => "ClickUp",
             ProjectMgmtProvider::Airtable => "Airtable",
             ProjectMgmtProvider::Linear => "Linear",
+            ProjectMgmtProvider::Beads => "Beads",
         }
     }
 
@@ -189,6 +191,7 @@ impl ProjectMgmtProvider {
             ProjectMgmtProvider::Clickup,
             ProjectMgmtProvider::Airtable,
             ProjectMgmtProvider::Linear,
+            ProjectMgmtProvider::Beads,
         ]
     }
 }
@@ -369,6 +372,8 @@ pub struct AppearanceConfig {
     pub airtable: ProviderStatusAppearance,
     #[serde(default)]
     pub linear: ProviderStatusAppearance,
+    #[serde(default)]
+    pub beads: ProviderStatusAppearance,
 }
 
 impl AppearanceConfig {
@@ -379,6 +384,7 @@ impl AppearanceConfig {
             ProjectMgmtProvider::Clickup => &mut self.clickup,
             ProjectMgmtProvider::Airtable => &mut self.airtable,
             ProjectMgmtProvider::Linear => &mut self.linear,
+            ProjectMgmtProvider::Beads => &mut self.beads,
         }
     }
 
@@ -389,6 +395,7 @@ impl AppearanceConfig {
             ProjectMgmtProvider::Clickup => &self.clickup,
             ProjectMgmtProvider::Airtable => &self.airtable,
             ProjectMgmtProvider::Linear => &self.linear,
+            ProjectMgmtProvider::Beads => &self.beads,
         }
     }
 
@@ -432,6 +439,8 @@ pub struct Config {
     pub airtable: AirtableConfig,
     #[serde(default)]
     pub linear: LinearConfig,
+    #[serde(default)]
+    pub beads: BeadsConfig,
     #[serde(default)]
     pub ui: UiConfig,
     #[serde(default)]
@@ -565,6 +574,31 @@ impl Default for LinearConfig {
         Self {
             refresh_secs: default_linear_refresh(),
             cache_ttl_secs: default_linear_cache_ttl(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BeadsConfig {
+    #[serde(default = "default_beads_refresh")]
+    pub refresh_secs: u64,
+    #[serde(default = "default_beads_cache_ttl")]
+    pub cache_ttl_secs: u64,
+}
+
+fn default_beads_refresh() -> u64 {
+    120
+}
+
+fn default_beads_cache_ttl() -> u64 {
+    60
+}
+
+impl Default for BeadsConfig {
+    fn default() -> Self {
+        Self {
+            refresh_secs: default_beads_refresh(),
+            cache_ttl_secs: default_beads_cache_ttl(),
         }
     }
 }
@@ -1169,6 +1203,10 @@ impl Config {
         std::env::var("WOODPECKER_TOKEN").ok()
     }
 
+    pub fn beads_token() -> Option<String> {
+        std::env::var("BEADS_TOKEN").ok()
+    }
+
     pub fn exists() -> bool {
         Self::config_dir().map(|d| d.exists()).unwrap_or(false)
     }
@@ -1223,6 +1261,8 @@ pub struct RepoProjectMgmtConfig {
     pub airtable: RepoAirtableConfig,
     #[serde(default)]
     pub linear: RepoLinearConfig,
+    #[serde(default)]
+    pub beads: RepoBeadsConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -1255,6 +1295,14 @@ pub struct RepoLinearConfig {
     pub username: Option<String>,
     pub in_progress_state: Option<String>,
     pub done_state: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct RepoBeadsConfig {
+    pub workspace_id: Option<String>,
+    pub team_id: Option<String>,
+    pub in_progress_status: Option<String>,
+    pub done_status: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -1469,6 +1517,7 @@ impl RepoConfig {
                         clickup: RepoClickUpConfig::default(),
                         airtable: RepoAirtableConfig::default(),
                         linear: RepoLinearConfig::default(),
+                        beads: RepoBeadsConfig::default(),
                     },
                     prompts: legacy.prompts,
                     dev_server: DevServerConfig::default(),
