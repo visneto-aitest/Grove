@@ -4069,6 +4069,7 @@ async fn process_action(
                     },
                     ProjectMgmtTaskStatus::Notion(_) => {}
                     ProjectMgmtTaskStatus::None => {}
+                    ProjectMgmtTaskStatus::Beads(_) => {}
                 }
             }
         }
@@ -4713,6 +4714,7 @@ async fn process_action(
                                 }
                             }
                             ProjectMgmtTaskStatus::None => {}
+                            ProjectMgmtTaskStatus::Beads(_) => {}
                         }
                     }
                 }
@@ -4884,6 +4886,7 @@ async fn process_action(
                 ProjectMgmtProvider::Clickup => clickup_client.invalidate_cache().await,
                 ProjectMgmtProvider::Airtable => airtable_client.invalidate_cache().await,
                 ProjectMgmtProvider::Linear => linear_client.invalidate_cache().await,
+                ProjectMgmtProvider::Beads => {},
             }
             state.task_list_loading = true;
             let _ = action_tx.send(Action::FetchTaskList);
@@ -4909,9 +4912,6 @@ async fn process_action(
                 let result = match provider {
                     ProjectMgmtProvider::Beads => Err("Beads integration not wired".to_string()),
                     ProjectMgmtProvider::Asana => {
-                        let _ = ();
-                    }
-                    _ => {}
                         match asana_client.get_project_tasks_with_subtasks().await {
                             Ok(tasks) => {
                                 let mut items: Vec<TaskListItem> = tasks
@@ -5717,6 +5717,16 @@ async fn process_action(
                                     is_subtask: task.is_subtask(),
                                 })
                             }
+                            ProjectMgmtProvider::Beads => {
+                                let identifier = task.identifier.clone().unwrap_or_default();
+                                ProjectMgmtTaskStatus::Beads(BeadsTaskStatus::NotStarted {
+                                    id: task.id.clone(),
+                                    identifier,
+                                    name: task.name.clone(),
+                                    status_name: task.status_name.clone(),
+                                    url: task.url.clone(),
+                                })
+                            }
                         };
                         agent.pm_task_status = pm_status;
                         state.log_info(format!("Linked task '{}' to agent", task.name));
@@ -5915,6 +5925,13 @@ async fn process_action(
                         .repo_config
                         .project_mgmt
                         .linear
+                        .team_id
+                        .is_some(),
+                    ProjectMgmtProvider::Beads => state
+                        .settings
+                        .repo_config
+                        .project_mgmt
+                        .beads
                         .team_id
                         .is_some(),
                 };
@@ -6492,6 +6509,7 @@ async fn process_action(
                         }
                     }
                     ProjectMgmtTaskStatus::None => {}
+                    ProjectMgmtTaskStatus::Beads(_) => {}
                 }
             }
         }
@@ -9394,6 +9412,15 @@ async fn process_action(
                             );
                         }
                     }
+                    grove::app::config::ProjectMgmtProvider::Beads => {
+                        state.settings.repo_config.project_mgmt.beads.workspace_id = state.pm_setup.selected_workspace_gid.clone();
+                        state.settings.repo_config.project_mgmt.beads.team_id = Some(id.clone());
+                        if let Err(e) = state.settings.repo_config.save(&state.repo_path) {
+                            state.log_error(format!("Failed to save project config: {}", e));
+                        } else {
+                            state.log_info(format!("Beads setup complete: project '{}'", selected_name));
+                        }
+                    }
                 }
             }
             if let Some(wizard) = &mut state.project_setup {
@@ -9959,6 +9986,7 @@ async fn process_action(
                         }
                     });
                 }
+                grove::app::config::ProjectMgmtProvider::Beads => {}
             }
         }
 
@@ -10431,6 +10459,7 @@ async fn process_action(
                             }
                         });
                     }
+                    grove::app::config::ProjectMgmtProvider::Beads => {}
                 }
             }
         }
@@ -10597,6 +10626,7 @@ async fn process_action(
                         }
                     });
                 }
+                grove::app::config::ProjectMgmtProvider::Beads => {}
             }
         }
 
